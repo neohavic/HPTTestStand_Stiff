@@ -1,0 +1,1142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MAIN" Id="{13fed53e-2e4e-43f3-b325-6a0c93aeb8ef}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+
+// Function instants
+	fbSAstiffness		: FB_SAstiffness;
+	fbWriteSettings		: FB_WriteHPTSettings;
+	fbROM 				: FB_ROMTest;
+	fbSWEEP 			: FB_SineSweep;
+	fbSTIFF 			: FB_TriForce;
+	fbBWY				: FB_TriForce;
+	fbPLOOP 			: FB_PLoop;
+	fbToString 			: FB_FormatString;
+	fbB2V 				: FB_BinToVer;
+	fbEL6001 			: FB_SerialCom;
+	fbHeidCon 			: FB_HeidConv;
+	fbPyListen			: FB_PyListener;
+	fbPyListenStiff		: FB_PyListenerStiffness;
+	fbWriteSDO			: FB_WriteSDO;
+	fbGetTime			: FB_PLCTime;
+	fbPyPosRep			: FB_PyPosRep;
+	
+// Startup Variables
+	FaultMask AT %Q* 	: UDINT := 2#00000000;
+	
+// HMI Variables
+	txtLazer 			: STRING;
+	txtActEncVal 		: STRING;
+	txtMirEncVal 		: STRING;
+	txtRPM 				: STRING;
+	txtTorque 			: STRING;
+	BinStatus 			: STRING;
+	txtActROM 			: STRING;
+	txtMirROM 			: STRING;
+	txtEngActEnc 		: STRING; 
+	txtEngMirEnc 		: STRING;
+	txtActMid 			: STRING;
+	txtMirMid 			: STRING;
+	txtLC 				: STRING;
+	txtPdiff 			: STRING;
+	txtBWYPress 		: STRING;
+	txtFlow 			: STRING;
+	txtMtrTemp			: STRING;
+	txtEncTemp			: STRING;
+	txtMtrCurrent		: STRING;
+	sHeidOut 			: STRING;
+	HeidA 				: STRING;
+	HeidB 				: STRING;
+	HeidC 				: STRING;
+	HeidD 				: STRING;
+	sSetpoint 			: STRING;
+	sSelHPT				: STRING;
+	sTime				: STRING;
+	sp_force 			: STRING;
+	engActEnc 			: LREAL; // Converted engineering units
+	engMirEnc 			: LREAL; // Converted engineering units
+	mtrRPM 				: LREAL;
+	BWYPressPSI			: REAL;
+	FlowRate 			: REAL;
+	mtrTorq 			: REAL;
+	mtrCurrent			: REAL;
+	LazrMeter 			: REAL;
+	AIR_CTR 			: REAL;
+	ROM_Act 			: REAL;
+	ROM_mirr			: REAL;
+	HeidANum 			: REAL;
+	HeidBNum 			: REAL;
+	HeidCNum 			: REAL;
+	HeidDNum 			: REAL;
+	COARSE_VAL 			: REAL; // Variables for converted interferometer converted counts to length
+	FINE_VAL 			: REAL;
+	MtrTemp				: REAL;
+	EncTemp				: REAL;
+	TestCycles			: INT;
+	atto1 				: REAL;
+	atto2 				: REAL;
+	atto3 				: REAL;
+	atto4 				: REAL;
+	atto5 				: REAL;
+	atto6 				: REAL;
+	atto1uM 			: REAL;
+	atto2uM 			: REAL;
+	atto3uM 			: REAL;
+	atto4uM 			: REAL;
+	atto5uM 			: REAL;
+	atto6uM 			: REAL;
+	satto1uM 			: STRING;
+	satto2uM 			: STRING;
+	satto3uM 			: STRING;
+	satto4uM 			: STRING;
+	satto5uM 			: STRING;
+	satto6uM 			: STRING;
+	ROM_ActMid 			: ULINT;
+	ROM_MirrMid 		: ULINT;
+	btnEnb 				: BOOL;
+	btnEnbnum 			: BOOL := FALSE;
+	btnReset 			: BOOL := FALSE;
+	btnTareLC			: BOOL := FALSE;
+	btnPyPosRep			: BOOL := FALSE;
+	btnClrSAerrors		: BOOL := FALSE; 
+	tglSine 			: BOOL := FALSE;
+	tglROM 				: BOOL := FALSE;
+	tglStiffness 		: BOOL := FALSE;
+	tglSAstiffness		: BOOL := FALSE;
+	tglBWY				: BOOL := FALSE;
+	tglPLoop 			: BOOL := FALSE;
+	tglPyTest			: BOOL := FALSE;
+	JogPos 				: BOOL := FALSE;
+	JogNeg 				: BOOL := FALSE;
+	PyLoad				: BOOL;
+	PyLoadBusy			: BOOL := FALSE;
+	PyEnable			: BOOL := TRUE;
+	MtrErrArr 			: ARRAY[0..15] OF BOOL;
+	
+(* DEBUG VARIABLES *)
+	//test 				: BOOL := FALSE;
+	//int1 				: INT;
+	//real2 			: REAL;
+	//real3 			: REAL;
+	
+// SA Related Variables for Stiffness Fixture
+	// actions
+	actions : (idle, clear_all, enable_all, disable_all,read_ncyl,read_alias,read_gains,write_gains,read_file,send_waveform_cmd, send_waveform_cmd_debug, send_waveform_pwm);
+	sp_x AT %Q* : REAL;
+	sp_y AT %Q* : REAL;
+	sp_z AT %Q* : REAL;
+	
+	f_num : INT := 1; // file number
+	signal_scale : REAL := 1;
+	signal_offset : REAL :=0;
+	signal_axis : INT :=1;
+
+	//VARIABLES FOR SENSOR OUTPUTS TO BE DISPLAYED IN UNITS OF MEASUREMENT
+	spr_x AT %I* : REAL;
+	spr_y AT %I* : REAL;
+	spr_z AT %I* : REAL;
+	rb_x AT %I* : REAL;
+	txtRB_X 	: STRING;
+	rb_y AT %I* : REAL;
+	rb_z AT %I* : REAL;
+	pwm1 AT %I* : REAL;
+	pwm2 AT %I* : REAL;
+	pwm3 AT %I* : REAL;
+	cyl_sum : REAL;
+	cmd_sum : REAL;
+	
+	//CONSTANTS FOR ADC GAIN COEFFICIENTS
+	//ADC1: CH1 and CH2 PRESSURE, CH3 FLOW, CH4 NOT CONNECTED
+	//ADC2: ALL CHANNELS PRESSURE
+	GAIN_PRESSURE : REAL := 2.2;
+	GAIN_FLOW : REAL := 2.2;//80;
+	
+	// ***********************************************************
+	
+	sa_addr : UINT := 1013;	
+	clearfault : FB_ClearFault;
+	readncyl : FB_ReadNcyl;
+	readalias : FB_ReadAlias;
+	readfile : FB_readtextfile;
+	
+	max_rows : UDINT := 10001;
+	sfile : T_MaxString ;
+	waveform_pwm : FB_WritePWM;
+	state : INT := 2;
+	step : DWORD :=0;
+	bError : BOOL;
+	t_index : UINT :=1;
+	alias : UDINT;
+	ncyl: UINT;
+	signal : ARRAY[1.. GVL_TS.max_rows] OF REAL;
+	
+	fol_err : REAL;
+	db : REAL := 14.0;
+	dbi : REAL := 0;
+	pwm : REAL := 0.0;
+	value : REAL := 0.0;
+	
+	sdo_address: UINT;
+	subIndex: BYTE;
+	sNetId_local : T_AmsNetId := '10.134.198.192.2.1';	// Address of this computer 
+	//sNetId_local : T_AmsNetId := '10.10.16.19.2.1';	// Address of this computer
+	
+// heartbeat
+	msthb AT %Q* : UDINT;
+	enable AT %Q* : BOOL;
+	close_loop AT %Q* : BOOL;
+	
+	err_mhb AT %I* : BOOL;
+	err_f_minmax AT %I* : BOOL;
+	err_f_step AT %I* : BOOL;
+	err_cal AT %I* : BOOL;
+	err_dongle AT %I* : BOOL;
+	err_locid AT %I* : BOOL;
+	err_soc AT %I* : BOOL;
+	err_ff AT %I* : BOOL;
+	
+	force : INT;
+
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(*-----------------------------------------------------------------------------------------------------
+ 	Hardpoint Test Stand, GMTO
+ 	v2.2.0
+	
+	*CHANGE LOG*
+	1.0.0
+			- First "complete" release
+				-HMI
+					-Control and monitor all sensors and tests
+				-Scope project
+					-Monitor and record all availible sensors and ADS variables and export as CSV for analysis
+				-Tests included:
+					-Range of motion
+					-Position loop
+					-Stiffness test
+						-Multiple force profiles availible
+					-Sine sweep
+						*NOT TESTED ON HARDWARE, WORKS IN SCOPE PROJECT ONLY*
+					
+	1.4.5: 
+			- Refactoring started:
+				Clean up variables by standardizing naming conventions (upper camel case, leading lowercase b, s, fb, etc. for special case variables) 
+				Whitespaces in declarations
+				Removing unused variables
+				Change variable types to lower memory footprint
+				Reorganize variables to group by type
+				
+	1.4.6
+			- Thermocouple data added to HMI
+				Settings made in EL3312 to read correctly:
+					CoE 8000:01 = TRUE
+						8000:07 = TRUE
+						8000:08 = TRUE
+						8000:12 = 31451
+						8000:13 = -730
+						8000:14 = 4820
+						8010:01 = TRUE
+						8010:07 = TRUE
+						8010:08 = TRUE
+						8010:12 = 31438
+						8010:13 = -730
+						8010:14 = 4820
+			- Further refactoring
+			- Divided MAIN into clearer sections for ease of reading
+			- Removed redundant limit switch check
+			- Changed some HMI readouts to 4 decimal places
+			
+	1.4.7
+			- HMI Cleanup and fixes
+			- NOTE ADDED: EL5042 changes to be made to enable correct operation
+				CoE 8008:15 - 26
+					8008:16 - 0
+					8018:15 - 26
+					8018:16 - 0
+	
+	1.4.8	
+			-= VERSION SKIPPED =-
+	
+	1.4.9	
+			- Added, then removed, auto-tare for interferometer and load cell on test starts 
+			- Added Tare button to HMI; disabled for time being
+	
+	2.0.0	
+			- Python "PyListener" code added to listen for TC3 variables over ADS and build .CSV
+				- Also grabs AttoCube measurements to calculate stiffness
+			- Added ability to tare load cell back into HMI
+				- Uses new FB_WriteSDO POU to write to SDOs in order to accomplish this
+			- Added seperate buttons for both stiffness and breakaway tests
+			- Simplified underlying stiffness/breakaway test code into one, singular function
+				- Able to define both slope and force as inputs to function
+			- Partitioned off tests into distinct "types" on HMI
+			- Removed "Sine Sweep" test button from HMI; did not remove underlying code
+				- CME has the ability to run bandwith tests natively, will need to add back into stand eventually
+			- Further refactoring done to clean up unused variables/functions
+			
+	2.1.0
+			- Python "PyListener" launches on start of any test, and ends collection on test stop
+			- Further refactoring
+			- Converted PLC time code into POU to clean up MAIN
+	2.2.0
+			- Added ability to toggle PyListener on and off
+				- Buttons added on HMI for this
+			- Able to launch PyListener for arbitrary data collection
+			- Added cycle counter for stiffness/breakaway tests and readout on HMI
+			- HMI cleaned up for better readability
+			- HMI size property fixed to always show full dashboard when undocked
+				
+				
+	TO-DO:
+			
+			- Use new FB_WriteSDO to force write all required settings on startup
+				- Needs ability to write different variable sizes/types to correct positions
+			- Continue refactoring as needed
+			- Write new POU force stiffness/breakaway tests that has a "ramp up/hold/ramp down/hold/repeat profile"
+				with ability to fully customize ramp speeds, hold times, and total force applied during all phases of test run
+			- Possibly write a fully automated, non-steady state position loop test (I.E. start at set point, move up XXXcts, 
+				return to starting setpoint, move down XXXcts, return to setpoint; do for how ever many cycles, each cycle
+				being YYY[s] long)
+			- Test/Debug Sine Sweep test on actual hardware
+			- ??? (add to as necessary)
+
+(*-----------------------------------------------------------------------------------------------------*)
+ 	Austin Everman - Overall framework, HMI, integration of code for individual tests, PyListener (with
+	Trupti Ranka - coding for individual tests, technical help
+	William Schoenell - AttoCube Python connection code
+
+              _______________
+          ==c(___(o(______(_()
+                  \=\
+                   )=\
+                  //|\\
+                 //|| \\
+                // ||  \\
+               //  ||   \\
+              //         \\
+			  
+-------------------------------------------------------------------------------------------------------*)
+(*-----------------------------------------------------------------------------------------------------*)
+//fbWriteSettings();
+(*-----------------------------------------------------------------------------------------------------*)
+(* CONVERSION SECTION OF THE HMI THAT DEALS WITH TAKING RAW DATA AND CONVERTING IT FOR *)
+(* DISPLAY ON THE DASHBOARD 														   *)
+(*-----------------------------------------------------------------------------------------------------*)
+// Parse status word into boolean array for HMI
+fbB2V(
+	BinInput := GVL_TS.status_word, 
+	MtrErrArr => MtrErrArr
+);
+(*-----------------------------------------------------------------------------------------------------*)
+// Convert interferometer signal strength voltage output to scaled 0-100% output for HMI
+LazrMeter := (INT_TO_REAL(GVL_TS.LazrStrength)/32767) * 1000;
+(*-----------------------------------------------------------------------------------------------------*)
+// Call function to convert interferometer counts to mm
+FB_CountConv(
+	GVL_TS.RsCount, 
+	MEASC_OUT => COARSE_VAL, // Return from function for conversion for coarse resolution laser intererometric measurements; Currently in use
+	MEASF_OUT => FINE_VAL    // Not in use, but conversion made for fine resolution in event of use; setting is made on RLU dip switch on front of unit
+);
+(*-----------------------------------------------------------------------------------------------------*)
+// Convert coarse interferometer value to string, limit to 6 decimal places for HMI, include 'traveling' engineering unit
+fbToString(
+	sFormat := '%.6f', 
+	arg1 := F_REAL(COARSE_VAL), 
+	sOut => txtLazer
+);
+txtLazer := CONCAT(txtLazer, ' mm');
+(*-----------------------------------------------------------------------------------------------------*)
+// Convert encoder values to string for HMI
+txtActEncVal := TO_STRING(GVL_TS.ActEncCount);
+txtMirEncVal := TO_STRING(GVL_TS.MirEncCount);
+(*-----------------------------------------------------------------------------------------------------*)
+// Convert actuator and mirror encoder counts to engineering units (mm) and display only 4 decimal places
+engActEnc := GVL_TS.ActEncCount * 5E-6;
+fbToString(
+	sFormat := '%.5f', 
+	arg1 := F_LREAL(engActEnc), 
+	sOut => txtEngActEnc
+);
+txtEngActEnc := CONCAT(txtEngActEnc, ' mm');
+engMirEnc := GVL_TS.MirEncCount * 5E-6;
+fbToString(
+	sFormat := '%.5f', 
+	arg1 := F_LREAL(engMirEnc), 
+	sOut => txtEngMirEnc
+);
+txtEngMirEnc := CONCAT(txtEngMirEnc, ' mm');
+txtActMid := TO_STRING(ROM_ActMid);
+txtMirMid := TO_STRING(ROM_MirrMid);
+
+// Limit encoder range displayed on HMI to 4 decimal places
+fbToString(
+	sFormat := '%.4f', 
+	arg1 := F_REAL(ROM_Act), 
+	sOut => txtActROM
+);
+txtActROM := CONCAT(txtActROM, ' mm');
+fbToString(
+	sFormat := '%.4f', 
+	arg1 := F_REAL(ROM_mirr), 
+	sOut => txtMirROM
+);
+txtMirROM := CONCAT(txtMirROM, ' mm');
+(*-----------------------------------------------------------------------------------------------------*)
+// Read out reported velocity from motor and convert using scaling factor into string; tack on RPM string 
+// at the end to make it all fancy-like
+// Scale factor = (1 revolution/2^17 counts)(0.1 counts/second)(60 seconds/minute)
+mtrRPM := TO_LREAL(GVL_TS.mtrl_vel) * 4.578E-5;
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_LREAL(mtrRPM), 
+	sOut => txtRPM
+);
+txtRPM := CONCAT(txtRPM, ' RPM');
+(*-----------------------------------------------------------------------------------------------------*)
+// Read out torque value from motor, convert to engineering units, and tack on travelling unit
+// for HMI display like previous conversions
+mtrTorq := GVL_TS.mtr_tor; // NEEDS CONVERSION FACTOR!!!!!!
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_REAL(mtrTorq), 
+	sOut => txtTorque
+);
+txtTorque := CONCAT(txtTorque, ' Nm');
+(*-----------------------------------------------------------------------------------------------------*)
+// Read out torque value from motor, convert to engineering units, and tack on travelling unit
+// for HMI display like previous conversions
+mtrCurrent := (TO_REAL(GVL_TS.mtrCurrent)) / 100; // NEEDS CONVERSION FACTOR!!!!!!
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_REAL(mtrCurrent), 
+	sOut => txtMtrCurrent
+);
+txtMtrCurrent := CONCAT(txtMtrCurrent, ' A');
+(*-----------------------------------------------------------------------------------------------------*)
+// Limit loadcell display on HMI to 4 decimal places and tack on traveling 'N' engineering unit at end
+fbToString(
+	sFormat := '%.4f', 
+	arg1 := F_REAL(GVL_TS.LC_InR), 
+	sOut => txtLC
+);
+txtLC := CONCAT(txtLC, ' N');
+(*-----------------------------------------------------------------------------------------------------*)
+// Convert the difference in PID setpoint and actuator count into string for display on HMI
+fbToString(
+	sFormat := '%.0f', 
+	arg1 := F_LREAL(GVL_TS.Pdiff), 
+	sOut => txtPdiff
+);
+txtPdiff := CONCAT(txtPdiff, ' Cts');
+(*-----------------------------------------------------------------------------------------------------*)
+// Convert input pressure from Bar to PSI then into string for display on HMI
+BWYPressPSI := (10 * (TO_REAL(GVL_TS.PressureIn) / 32767)) * 14.504;
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_REAL(BWYPressPSI), 
+	sOut => txtBWYPress
+);
+txtBWYPress := CONCAT(txtBWYPress, ' PSI');
+(*-----------------------------------------------------------------------------------------------------*)
+// Convert flow rate into string for display on HMI
+FlowRate := 20 * (TO_REAL(GVL_TS.FlowIn) / 32767);
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_REAL(FlowRate), 
+	sOut => txtFlow
+);
+txtFlow := CONCAT(txtFlow, ' SLPM');
+(*-----------------------------------------------------------------------------------------------------*)
+// Convert thermocouple readings for display on HMI
+MtrTemp := TO_REAL(GVL_TS.MotorTemp) / 10;
+EncTemp := TO_REAL(GVL_TS.EncTapeTemp) / 10;
+
+fbToString(
+	sFormat := '%.1f', 
+	arg1 := F_REAL(MtrTemp), 
+	sOut => txtMtrTemp
+);
+txtMtrTemp := CONCAT(txtMtrTemp, ' C');
+
+fbToString(
+	sFormat := '%.1f', 
+	arg1 := F_REAL(EncTemp), 
+	sOut => txtEncTemp
+);
+txtEncTemp := CONCAT(txtEncTemp, ' C');
+(*-----------------------------------------------------------------------------------------------------*)
+(*-----------------------------------------------------------------------------------------------------*)
+(*-----------------------------------------------------------------------------------------------------*)
+(*									   *)
+(* TEST AND CONTROL SECTION OF THE HMI *)
+(*									   *)
+(*-----------------------------------------------------------------------------------------------------*)
+(*-----------------------------------------------------------------------------------------------------*)
+(*-----------------------------------------------------------------------------------------------------*)
+// Call function to convert slider position in HMI to EL4102 0-10V signal
+FB_AirConv(AIR_CTR);
+(*-----------------------------------------------------------------------------------------------------*)
+// Enable the motor and set enable flag for the rest of the program
+FB_MtrCtrl(
+	bBtnEnb => btnEnb
+);
+(*-----------------------------------------------------------------------------------------------------*)
+// If no tests running, set motor enable flag to flase, and run motor control routine to disable the motor
+IF tglSine = FALSE AND tglROM = FALSE THEN
+	FB_MtrCtrl();
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// If HMI "Start Sine Sweep" button pressed, set enable motor flag, run motor control routine, and run sine sweep test
+IF tglSine = TRUE THEN
+	FB_MtrCtrl();
+	fbSWEEP();	
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// If HMI "Start Range of Motion Test" button pressed, set enable motor flag, run motor control routine, and run range of motion test
+IF tglROM = TRUE THEN
+	FB_MtrCtrl();
+	fbROM(
+		ROM_Act => ROM_Act, 
+		ROM_mirr => ROM_mirr, 
+		ROM_ActMid => ROM_ActMid, 
+		ROM_MirrMid => ROM_MirrMid 
+		);
+ELSE
+	GVL_TS.target_vel := 0;
+	FB_MtrCtrl();
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// If HMI "Reset Motor" button pressed, disable motor, enable motor reset flag, and run motor control routine to pass commands
+IF btnReset = TRUE THEN
+	GVL_TS.bReset := TRUE;
+	FB_MtrCtrl();
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// If HMI "Enable Motor" button pressed, set enable motor flag and run motor control routine
+IF btnEnb = TRUE THEN
+	FB_MtrCtrl();
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// If either "Jog Position" button pressed, activate motor control with appropriate target velocity
+IF JogPos = TRUE THEN
+	FB_MtrCtrl();
+	GVL_TS.target_vel := TO_DINT(STRING_TO_WORD(GVL_TS.sJog)/(4.578E-5));
+END_IF
+
+IF JogNeg = TRUE THEN
+	FB_MtrCtrl();
+	GVL_TS.target_vel := TO_DINT(STRING_TO_WORD(GVL_TS.sJog)/(-4.578E-5));
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// Start Python data collection if any test is ran
+IF (tglSAStiffness = TRUE OR tglStiffness = TRUE OR tglBWY = TRUE OR tglROM = TRUE OR tglSine = TRUE OR tglPLoop = TRUE OR tglPyTest = TRUE) AND PyEnable = TRUE THEN
+	
+	IF (tglStiffness = TRUE OR tglBWY = TRUE OR tglROM = TRUE OR tglSine = TRUE OR tglPLoop = TRUE) THEN
+		fbPyListen(bExecute := TRUE);
+	END_IF
+	
+	IF (tglSAStiffness = TRUE OR tglPyTest = TRUE) THEN
+		fbPyListenStiff(bExecute := TRUE);
+		PyLoadBusy := TRUE;
+	END_IF
+	PyLoadBusy := TRUE;
+ELSE
+	fbPyListen(
+		Initialized := FALSE,
+		bExecute := FALSE,
+		Init_State := 0
+	);
+	fbPyListenStiff(
+		Initialized := FALSE,
+		bExecute := FALSE,
+		Init_State := 0
+	);
+	PyLoadBusy := FALSE;
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+
+// If HMI "Start Stiffness Test" button pressed, disable motor enable flag, run motor control routine
+// and start stiffness test
+IF tglStiffness = TRUE THEN
+	FB_MtrCtrl();
+	fbSTIFF(
+		Slope := 10000,
+		Force := 7500, //Original force for 450N
+		CyclesOut => TestCycles,
+	);
+ELSE
+	fbSTIFF.Cycles := 0;
+	fbSTIFF.Counter := 0;
+	fbSTIFF.Channel1Command := 0;
+	fbSTIFF.Channel2Command := 0;
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// If HMI "Start Stiffness Test" button pressed, disable motor enable flag, run motor control routine
+// and start stiffness test
+IF tglBWY = TRUE THEN
+	FB_MtrCtrl();
+	fbBWY(
+		Slope := 10000,
+		Force := 32767,
+		CyclesOut => TestCycles
+	);
+ELSE
+	fbBWY.Cycles := 0;
+	fbBWY.Counter := 0;
+	fbBWY.Channel1Command := 0;
+	fbBWY.Channel2Command := 0;
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// Start motor control, convert setpoint value from string into number, and start position loop test
+IF tglPLoop = TRUE THEN
+	FB_MtrCtrl();
+	fbPLOOP(
+		fSetPointValue := STRING_TO_REAL(sSetpoint)
+	);
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// If "Tare Load Cell" button pressed, write to appropriate SDO to perform taring operation 
+IF btnTareLC = TRUE THEN
+	fbWriteSDO(
+		nSlaveAddr := 1012,
+		nIndex := 16#FB00,
+		nSubIndex := 16#01,
+		bExecute := TRUE,
+		nValueInt := 16#02
+		);
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// If no tests are running, ensures motor is disabled
+IF tglSAstiffness = FALSE AND tglSine = FALSE AND tglROM = FALSE AND tglStiffness = FALSE AND JogPos = FALSE AND JogNeg = FALSE THEN
+	FB_MtrCtrl();
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+// Send and receive commands over the Heidenhain RS-232 interface
+fbEL6001(
+	TxBuffer := GVL_TS.TxBufferEL, 
+	RxBuffer := GVL_TS.RxBufferEL, 
+	sHeidOut => sHeidOut
+);
+// Convert the massive single string sent over RS-232 into 4 smaller strings for display on the HMI
+fbHeidCon(
+	sHeidIn := sHeidOut, 
+	s1 => HeidA, 
+	s2 => HeidB, 
+	s3 => HeidC, 
+	s4 => HeidD
+);
+// Convert each string into a REAL formatted number for data processing
+HeidANum := STRING_TO_REAL(HeidA);
+HeidBNum := STRING_TO_REAL(HeidB);
+HeidCNum := STRING_TO_REAL(HeidC);
+HeidDNum := STRING_TO_REAL(HeidD);
+(*-----------------------------------------------------------------------------------------------------*)
+// Get PLC time
+fbGetTime(
+	sTime => sTime
+	);
+(*-----------------------------------------------------------------------------------------------------*)
+IF btnPyPosRep = TRUE THEN
+	fbPyPosRep(bExecute := TRUE);
+	FB_MtrCtrl();
+	fbPLOOP(
+		fSetPointValue := STRING_TO_REAL(sSetpoint)
+	);
+	PyLoadBusy := TRUE;
+ELSE
+	fbPyPosRep(
+		Initialized := FALSE,
+		bExecute := FALSE,
+		Init_State := 0
+	);
+	//PyLoadBusy := FALSE;
+END_IF
+(*-----------------------------------------------------------------------------------------------------*)
+(* BEGIN DEBUGGING CODE *)
+
+// Convert drive amp status word from decimal to binary for display on HMI and easier debugging of problems
+//ToString(sFormat := '%.16b', arg1 := F_UINT(GVL_TS.status_word), sOut => BinStatus);
+
+// Tack on binary prefix notation, because I'm OCD like that ¯\_(ツ)_/¯
+//BinStatus := CONCAT('0b', BinStatus);
+
+(* END DEBUGGING CODE *)
+
+(*-----------------------------------------------------------------------------------------------------*)
+// SA RELATED CODE
+(*-----------------------------------------------------------------------------------------------------*)
+
+msthb := msthb + 1; // Increment masterheart count for SA
+//fol_err := spr_x - rb_x;
+
+CASE actions OF
+	idle:
+		state := 2;
+		bError := 0;
+		t_index := 1;
+		sp_x := 0;
+		sp_y := 0;
+		sp_z := 0;
+		
+	enable_all :
+		enable := TRUE;
+		close_loop := TRUE;
+		
+	disable_all:
+		enable := FALSE;
+		close_loop := FALSE;
+		
+	clear_all:
+	clearfault(bExecute := TRUE, 
+		slv_addr := sa_addr, 
+		state => state, 
+		bError=> bError 
+		);
+		
+	IF state = 0 THEN
+		actions := idle;
+	END_IF
+		
+	read_ncyl :
+		readncyl(
+			bExecute := TRUE, 
+			slv_addr := sa_addr, 
+			state => state, 
+			bError=> bError, 
+			value => ncyl 
+			);
+			
+		IF state = 0 THEN
+			actions := idle;
+		END_IF
+		
+	read_alias :
+		readalias(
+			bExecute := TRUE, 
+			slv_addr := sa_addr, 
+			state => state, 
+			bError=> bError, 
+			value => alias 
+			);
+			
+		IF state = 0 THEN
+			actions := idle;
+		END_IF
+		
+	read_file :
+		CASE f_num OF
+			1:
+			sfile := 'C:\Users\gmto\Documents\TcXaeShell\signals\sine_0_1Hz_A1750.csv';
+			max_rows := 10001;
+			2:
+			sfile := 'C:\Users\gmto\Documents\TcXaeShell\signals\sine_1Hz_A1750.csv';
+			max_rows := 1001;
+			3:
+			sfile := 'C:\Users\gmto\Documents\TcXaeShell\signals\sine_3Hz_A1750.csv';
+			max_rows := 334;
+			4:
+			sfile := 'C:\Users\gmto\Documents\TcXaeShell\signals\sine_5Hz_A1750.csv';
+			max_rows := 201;
+			5:
+			sfile := 'C:\Users\gmto\Documents\TcXaeShell\signals\sine_10Hz_A1750.csv';
+			max_rows := 101;
+			6:
+			sfile := 'C:\Users\gmto\Documents\TcXaeShell\signals\sinesweep_f1_50Hz_dt_1000Hz_amp15N_offset0.csv';
+			max_rows := 11981;
+			7:
+			sfile := 'C:\Users\gmto\Documents\TcXaeShell\signals\sinesweep_f1_100Hz_dt_1000Hz_amp15N_offset0.csv';
+			max_rows := 29995;
+			8:
+			sfile := 'C:\Users\gmto\Documents\TcXaeShell\signals\triangle.csv';
+			max_rows := 10001;
+			9:
+			sfile := 'C:\Users\gmto\Documents\TcXaeShell\signals\sine_00_1Hz_A1750.csv';
+			max_rows := 100001;
+		END_CASE
+		readfile(
+			bRead := TRUE, 
+			sFileName:=sfile, 
+			output=>signal,
+			step=>step
+			);
+			
+		IF step = 0 THEN
+			actions := idle;
+		END_IF	
+		
+	send_waveform_cmd :
+	CASE signal_axis OF
+		1:
+		sp_x := signal_scale * signal[t_index] + signal_offset;
+		sp_y := 0;
+		sp_z := 0;
+		fol_err := spr_x - rb_x;
+		2:
+		sp_x := 0;
+		sp_y := signal_scale * signal[t_index] + signal_offset;
+		sp_z := 0;
+		fol_err := spr_y - rb_y;
+		3:
+		sp_x := 0;
+		sp_y := 0;
+		sp_z := signal_scale * signal[t_index] + signal_offset;	
+		fol_err := spr_z - rb_z;
+	END_CASE
+		t_index := t_index + 1;
+		IF t_index > max_rows THEN
+			t_index := 1;
+		END_IF
+
+	send_waveform_cmd_debug :
+	CASE signal_axis OF
+		1:
+		sp_x := signal_scale*signal[t_index]+signal_offset;
+		sp_y := 0;
+		sp_z := 0;
+		fol_err := spr_x - rb_x;
+		2:
+		sp_x := signal_scale * signal[t_index] + signal_offset;
+		sp_y := signal_scale * signal[t_index] + signal_offset;
+		sp_z := 0;
+		fol_err := spr_y - rb_y;
+		3:
+		sp_x := signal_scale * signal[t_index] + signal_offset;
+		sp_y := signal_scale * signal[t_index] + signal_offset;
+		sp_z := signal_scale * signal[t_index] + signal_offset;	
+		fol_err := spr_z - rb_z;
+		4:
+		sp_x := 0;
+		sp_y := 0;
+		sp_z := 0;
+	END_CASE
+	
+		t_index := t_index+1;
+		
+		IF t_index>max_rows THEN
+			t_index := 1;
+		END_IF
+	
+	send_waveform_pwm:
+		waveform_pwm(
+			bExecute := TRUE, 
+			slv_addr := sa_addr,
+			value :=  signal[t_index], 
+			state => state, 
+			bError=> bError
+			);
+			
+		t_index := t_index+1;
+		
+		IF t_index>max_rows THEN
+			t_index := 1;
+		END_IF
+END_CASE
+
+IF tglSAstiffness = FALSE THEN
+	sp_x := STRING_TO_REAL(sp_force);
+END_IF
+
+IF tglSAstiffness = TRUE THEN
+	fbSAstiffness(
+		force => sp_x, 
+		cyclesOut => TestCycles);
+	sp_force := REAL_TO_STRING(sp_x);
+	FB_MtrCtrl();
+ELSE
+	fbSAstiffness.cycles := 0;
+	//fbSAstiffness.force := 0;
+END_IF
+
+IF btnClrSAerrors = TRUE THEN
+	fbWriteSDO(
+		nSlaveAddr := sa_addr,
+		nSubIndex := 16#1,
+		nIndex := 16#8006,
+		nValueBool := 16#01,
+		bExecute := TRUE);
+END_IF
+
+IF fbWriteSDO.bBusy = FALSE THEN
+	fbWriteSDO.bExecute := FALSE;
+END_IF
+
+atto1uM := atto1 / 1000000; 
+atto2uM := atto2 / 1000000; 
+atto3uM := atto3 / 1000000; 
+atto4uM := atto4 / 1000000; 
+atto5uM := atto5 / 1000000; 
+atto6uM := atto6 / 1000000;
+
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_REAL(atto1uM), 
+	sOut => satto1uM
+);
+satto1uM := CONCAT(satto1uM, ' uM');
+
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_REAL(atto2uM), 
+	sOut => satto2uM
+);
+satto2uM := CONCAT(satto2uM, ' uM'); 
+
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_REAL(atto3uM), 
+	sOut => satto3uM
+);
+satto3uM := CONCAT(satto3uM, ' uM'); 
+
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_REAL(atto4uM), 
+	sOut => satto4uM
+);
+satto4uM := CONCAT(satto4uM, ' uM'); 
+
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_REAL(atto5uM), 
+	sOut => satto5uM
+);
+satto5uM := CONCAT(satto5uM, ' uM'); 
+
+fbToString(
+	sFormat := '%.3f', 
+	arg1 := F_REAL(atto6uM), 
+	sOut => satto6uM
+);
+satto6uM := CONCAT(satto6uM, ' uM'); 
+
+fbToString(
+	sFormat := '%.4f', 
+	arg1 := F_REAL(rb_x), 
+	sOut => txtRB_X
+);
+txtRB_X := CONCAT(txtRB_X, ' N');
+]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="2724" Count="0" />
+      <LineId Id="2726" Count="24" />
+      <LineId Id="3583" Count="2" />
+      <LineId Id="3588" Count="6" />
+      <LineId Id="3596" Count="4" />
+      <LineId Id="3595" Count="0" />
+      <LineId Id="3587" Count="0" />
+      <LineId Id="3601" Count="2" />
+      <LineId Id="3789" Count="2" />
+      <LineId Id="3870" Count="0" />
+      <LineId Id="3872" Count="3" />
+      <LineId Id="4044" Count="0" />
+      <LineId Id="4861" Count="1" />
+      <LineId Id="4860" Count="0" />
+      <LineId Id="4045" Count="0" />
+      <LineId Id="4863" Count="0" />
+      <LineId Id="4046" Count="0" />
+      <LineId Id="4823" Count="1" />
+      <LineId Id="4864" Count="0" />
+      <LineId Id="4825" Count="4" />
+      <LineId Id="5068" Count="0" />
+      <LineId Id="4830" Count="3" />
+      <LineId Id="5062" Count="4" />
+      <LineId Id="5273" Count="1" />
+      <LineId Id="5278" Count="0" />
+      <LineId Id="5275" Count="2" />
+      <LineId Id="5279" Count="0" />
+      <LineId Id="3871" Count="0" />
+      <LineId Id="3538" Count="1" />
+      <LineId Id="4835" Count="1" />
+      <LineId Id="4859" Count="0" />
+      <LineId Id="3540" Count="2" />
+      <LineId Id="3546" Count="2" />
+      <LineId Id="3543" Count="0" />
+      <LineId Id="3545" Count="0" />
+      <LineId Id="2751" Count="3" />
+      <LineId Id="4839" Count="1" />
+      <LineId Id="2755" Count="8" />
+      <LineId Id="4841" Count="0" />
+      <LineId Id="2764" Count="0" />
+      <LineId Id="3582" Count="0" />
+      <LineId Id="4844" Count="0" />
+      <LineId Id="2766" Count="1" />
+      <LineId Id="3581" Count="0" />
+      <LineId Id="4701" Count="0" />
+      <LineId Id="2769" Count="1" />
+      <LineId Id="3241" Count="2" />
+      <LineId Id="2771" Count="5" />
+      <LineId Id="2778" Count="3" />
+      <LineId Id="3694" Count="6" />
+      <LineId Id="2785" Count="8" />
+      <LineId Id="3250" Count="3" />
+      <LineId Id="2794" Count="2" />
+      <LineId Id="3254" Count="3" />
+      <LineId Id="2797" Count="5" />
+      <LineId Id="3258" Count="3" />
+      <LineId Id="2803" Count="1" />
+      <LineId Id="3262" Count="3" />
+      <LineId Id="2805" Count="2" />
+      <LineId Id="3575" Count="0" />
+      <LineId Id="2808" Count="2" />
+      <LineId Id="3266" Count="3" />
+      <LineId Id="2811" Count="5" />
+      <LineId Id="3270" Count="3" />
+      <LineId Id="2817" Count="0" />
+      <LineId Id="3955" Count="8" />
+      <LineId Id="3954" Count="0" />
+      <LineId Id="2818" Count="2" />
+      <LineId Id="3274" Count="3" />
+      <LineId Id="2821" Count="2" />
+      <LineId Id="3784" Count="4" />
+      <LineId Id="3782" Count="0" />
+      <LineId Id="2826" Count="3" />
+      <LineId Id="3278" Count="3" />
+      <LineId Id="2830" Count="4" />
+      <LineId Id="3282" Count="3" />
+      <LineId Id="2835" Count="0" />
+      <LineId Id="3550" Count="2" />
+      <LineId Id="3564" Count="1" />
+      <LineId Id="3553" Count="4" />
+      <LineId Id="3549" Count="0" />
+      <LineId Id="3572" Count="0" />
+      <LineId Id="3567" Count="2" />
+      <LineId Id="3573" Count="1" />
+      <LineId Id="3570" Count="0" />
+      <LineId Id="3577" Count="1" />
+      <LineId Id="2836" Count="3" />
+      <LineId Id="3579" Count="1" />
+      <LineId Id="2840" Count="5" />
+      <LineId Id="3286" Count="1" />
+      <LineId Id="2846" Count="15" />
+      <LineId Id="3288" Count="4" />
+      <LineId Id="2862" Count="14" />
+      <LineId Id="3301" Count="0" />
+      <LineId Id="4846" Count="0" />
+      <LineId Id="3302" Count="7" />
+      <LineId Id="3300" Count="0" />
+      <LineId Id="5057" Count="0" />
+      <LineId Id="5045" Count="1" />
+      <LineId Id="6437" Count="0" />
+      <LineId Id="6431" Count="0" />
+      <LineId Id="6422" Count="0" />
+      <LineId Id="6424" Count="0" />
+      <LineId Id="6426" Count="2" />
+      <LineId Id="6430" Count="0" />
+      <LineId Id="6429" Count="0" />
+      <LineId Id="6425" Count="0" />
+      <LineId Id="5049" Count="5" />
+      <LineId Id="6433" Count="3" />
+      <LineId Id="6432" Count="0" />
+      <LineId Id="5055" Count="1" />
+      <LineId Id="6410" Count="0" />
+      <LineId Id="2877" Count="4" />
+      <LineId Id="4667" Count="0" />
+      <LineId Id="4732" Count="1" />
+      <LineId Id="5164" Count="0" />
+      <LineId Id="4731" Count="0" />
+      <LineId Id="5166" Count="1" />
+      <LineId Id="5174" Count="2" />
+      <LineId Id="4678" Count="0" />
+      <LineId Id="6138" Count="0" />
+      <LineId Id="4680" Count="4" />
+      <LineId Id="4723" Count="0" />
+      <LineId Id="4730" Count="0" />
+      <LineId Id="5172" Count="0" />
+      <LineId Id="4722" Count="0" />
+      <LineId Id="5171" Count="0" />
+      <LineId Id="5168" Count="0" />
+      <LineId Id="5173" Count="0" />
+      <LineId Id="5177" Count="1" />
+      <LineId Id="4671" Count="0" />
+      <LineId Id="3310" Count="0" />
+      <LineId Id="2884" Count="3" />
+      <LineId Id="3293" Count="1" />
+      <LineId Id="2888" Count="0" />
+      <LineId Id="4848" Count="9" />
+      <LineId Id="4847" Count="0" />
+      <LineId Id="3311" Count="0" />
+      <LineId Id="2901" Count="3" />
+      <LineId Id="3462" Count="0" />
+      <LineId Id="2922" Count="1" />
+      <LineId Id="3295" Count="3" />
+      <LineId Id="3576" Count="0" />
+      <LineId Id="2924" Count="12" />
+      <LineId Id="4721" Count="0" />
+      <LineId Id="5059" Count="2" />
+      <LineId Id="4568" Count="0" />
+      <LineId Id="5376" Count="0" />
+      <LineId Id="5383" Count="0" />
+      <LineId Id="7086" Count="2" />
+      <LineId Id="7085" Count="0" />
+      <LineId Id="5387" Count="7" />
+      <LineId Id="5384" Count="0" />
+      <LineId Id="5375" Count="0" />
+      <LineId Id="2937" Count="7" />
+      <LineId Id="856" Count="0" />
+      <LineId Id="6196" Count="1" />
+      <LineId Id="6195" Count="0" />
+      <LineId Id="6199" Count="0" />
+      <LineId Id="5766" Count="22" />
+      <LineId Id="6190" Count="4" />
+      <LineId Id="5789" Count="5" />
+      <LineId Id="6181" Count="1" />
+      <LineId Id="6185" Count="4" />
+      <LineId Id="5795" Count="5" />
+      <LineId Id="6174" Count="6" />
+      <LineId Id="5801" Count="34" />
+      <LineId Id="6168" Count="5" />
+      <LineId Id="5836" Count="48" />
+      <LineId Id="6165" Count="0" />
+      <LineId Id="5885" Count="0" />
+      <LineId Id="6166" Count="0" />
+      <LineId Id="5886" Count="2" />
+      <LineId Id="5891" Count="2" />
+      <LineId Id="6157" Count="6" />
+      <LineId Id="5894" Count="0" />
+      <LineId Id="6164" Count="0" />
+      <LineId Id="5895" Count="2" />
+      <LineId Id="5498" Count="0" />
+      <LineId Id="6200" Count="0" />
+      <LineId Id="6131" Count="0" />
+      <LineId Id="6201" Count="1" />
+      <LineId Id="6213" Count="0" />
+      <LineId Id="6208" Count="1" />
+      <LineId Id="6217" Count="0" />
+      <LineId Id="6216" Count="0" />
+      <LineId Id="6215" Count="0" />
+      <LineId Id="6887" Count="0" />
+      <LineId Id="6220" Count="1" />
+      <LineId Id="6224" Count="0" />
+      <LineId Id="6218" Count="0" />
+      <LineId Id="6144" Count="0" />
+      <LineId Id="6143" Count="0" />
+      <LineId Id="6145" Count="0" />
+      <LineId Id="6147" Count="2" />
+      <LineId Id="6151" Count="0" />
+      <LineId Id="6150" Count="0" />
+      <LineId Id="6146" Count="0" />
+      <LineId Id="6153" Count="0" />
+      <LineId Id="6152" Count="0" />
+      <LineId Id="6154" Count="1" />
+      <LineId Id="6623" Count="5" />
+      <LineId Id="6622" Count="0" />
+      <LineId Id="6636" Count="5" />
+      <LineId Id="6635" Count="0" />
+      <LineId Id="6649" Count="5" />
+      <LineId Id="6648" Count="0" />
+      <LineId Id="6656" Count="5" />
+      <LineId Id="6655" Count="0" />
+      <LineId Id="6663" Count="5" />
+      <LineId Id="6662" Count="0" />
+      <LineId Id="6670" Count="5" />
+      <LineId Id="6669" Count="0" />
+      <LineId Id="6677" Count="5" />
+      <LineId Id="6676" Count="0" />
+      <LineId Id="6881" Count="5" />
+      <LineId Id="6880" Count="0" />
+      <LineId Id="6133" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

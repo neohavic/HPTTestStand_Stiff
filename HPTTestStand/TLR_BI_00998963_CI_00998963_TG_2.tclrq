@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<TcLicenseInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2011/11/TcLicenseInfo">
+	<TargetInfo>
+		<TcTargetDesc>
+			<TargetType>PC-WIN 10.0</TargetType>
+			<TargetVersion>
+				<Version>3</Version>
+				<Revision>1</Revision>
+				<Build>4024</Build>
+			</TargetVersion>
+			<TargetFeatures>
+				<Level>CP</Level>
+				<NetId>10.10.160.129.1.1</NetId>
+			</TargetFeatures>
+			<Hardware>
+				<Model>0</Model>
+				<SerialNo>0</SerialNo>
+				<CPUVersion>0.0</CPUVersion>
+				<Date>0.0.00</Date>
+				<CPUArchitecture>0</CPUArchitecture>
+			</Hardware>
+			<OsImage>
+				<ImageDevice/>
+				<ImageVersion/>
+				<ImageLevel/>
+				<OsName>Windows 10 Enterprise</OsName>
+				<OsVersion>10.0</OsVersion>
+			</OsImage>
+		</TcTargetDesc>
+	</TargetInfo>
+	<LicenseInfo>
+		<SystemId Level="90" SerialNo="100071722">{C03F04E3-6253-5682-3750-0A7DB9D209C5}</SystemId>
+		<PurchaseOrder><![CDATA[00998963]]></PurchaseOrder>
+		<CustomOrder><![CDATA[00998963]]></CustomOrder>
+		<IssueTime>2022-12-16T20:39:00</IssueTime>
+		<License>
+			<LicenseId>{66689887-CCBD-452C-AC9A-039D997C6E66}</LicenseId>
+			<Name>TC3 PLC</Name>
+			<OrderNo>TC1200</OrderNo>
+		</License>
+		<License>
+			<LicenseId>{520DE751-9DB6-47CB-8240-BD5C466E7E64}</LicenseId>
+			<Name>TC3 NC PTP</Name>
+			<OrderNo>TF5000</OrderNo>
+		</License>
+		<License ManuallyAdded="true">
+			<LicenseId>{4989A799-AEEA-4FEE-88EF-666B99EEFB45}</LicenseId>
+			<Name>TC3 Scope View Professional</Name>
+			<OrderNo>TE1300</OrderNo>
+		</License>
+		<License ManuallyAdded="true">
+			<LicenseId>{796D380F-D49E-4C0C-A05F-500052FAC883}</LicenseId>
+			<Name>TC3 HMI Server</Name>
+			<OrderNo>TF2000</OrderNo>
+		</License>
+	</LicenseInfo>
+</TcLicenseInfo>

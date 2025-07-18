@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_TriForce" Id="{65ae4000-baac-4936-8767-c5de7effb27b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TriForce
+VAR_INPUT
+	Slope 					: DINT; 
+	Force					: UINT;
+	Cycles					: INT;
+	Counter					: DINT;
+	Channel1Command			: REAL := 0;
+	Channel2Command			: REAL := 0;
+END_VAR
+VAR_OUTPUT
+	CyclesOut				: INT := 0;
+END_VAR
+VAR
+
+END_VAR
+
+
+
+
+
+
+
+(*
+
+__________________________††¥¥
+_________________________††††¥¥
+________________________††††††¥¥
+_______________________††††††††¥¥
+______________________††††††††††¥¥
+_____________________††††††††††††¥¥
+____________________††††††††††††††¥¥
+___________________††††††††††††††††¥¥
+__________________††††††††††††††††††¥¥
+_________________††††††††††††††††††††¥¥
+________________††††††††††††††††††††††¥¥
+_______________††††††††††††††††††††††††¥¥
+______________††††††††††††††††††††††††††¥¥
+_____________††††††††††††††††††††††††††††¥¥
+____________††¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥††¥¥
+___________††††¥¥¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯††††¥¥
+__________††††††¥¥¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯††††††¥¥
+_________††††††††¥¥¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯††††††††¥¥
+________††††††††††¥¥¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯††††††††††¥¥
+_______††††††††††††¥¥¯¯¯¯¯¯¯¯¯¯¯¯¯¯††††††††††††¥¥
+______††††††††††††††¥¥¯¯¯¯¯¯¯¯¯¯¯¯††††††††††††††¥¥
+_____††††††††††††††††¥¥¯¯¯¯¯¯¯¯¯¯††††††††††††††††¥¥
+____††††††††††††††††††¥¥¯¯¯¯¯¯¯¯††††††††††††††††††¥¥
+___††††††††††††††††††††¥¥¯¯¯¯¯¯††††††††††††††††††††¥¥
+__††††††††††††††††††††††¥¥¯¯¯¯††††††††††††††††††††††¥¥
+_††††††††††††††††††††††††¥¥¯¯††††††††††††††††††††††††¥¥
+††††††††††††††††††††††††††††††††††††††††††††††††††††††¥¥
+¯¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥
+____________¶¶3333¶___¶¶¶¶ÿÿÿÿ¶¶¶¶___¶3333¶¶
+____________¶¶33333¶_¶ÿÿÿÿÿÿÿÿÿÿÿÿ¶_¶33333¶¶
+____________¶¶¶¶¶¶¶¶ÿÿ¶¶¶¶¶¶¶¶¶¶¶¶ÿÿ¶¶¶¶¶¶¶¶
+____________¶¶0000¶¶¶77777777777777¶¶¶0000¶¶
+____________¶¶0000¶¶7¶¶¶¶¶¶¶¶¶¶¶¶¶¶7¶¶0000¶¶
+_____________¶¶000¶¶¶a¯¯¶¶aaaa¶¶¯¯a¶¶¶000¶¶
+_____________¶¶000¶¶aa¯¯¶¶aaaa¶¶¯¯aa¶¶000¶¶
+______________¶¶00¶¶aaa¯¯aaaaaa¯¯aaa¶¶00¶¶
+_______________¶¶000¶¶aaaaaaaaaaaa¶¶000¶¶
+________________¶¶00¶¶¶¶aaaaaaaa¶¶¶¶00¶¶
+_________________¶¶88888¶¶¶¶¶¶¶¶88888¶¶
+__________________¶¶8855888888885588¶¶
+__________________¶¶8855555555555588¶¶
+________________¶¶11¶¶888855558888¶¶11¶¶
+______________¶¶88881111¶¶1111¶¶11118888¶¶
+______________¶¶¶¶¶¶8888111111118888¶¶¶¶¶¶
+____________¶¶ƒƒ§§¶¶¶¶¶¶88888888¶¶¶¶¶¶§§ƒƒ¶¶
+____________¶¶ƒƒƒƒ§§¶¶¯¶¶¶¶¶¶¶¶¶¶¯¶¶§§ƒƒƒƒ¶¶
+
+____________¶¶¶¶¶¶¶¶¶______________¶¶¶¶¶¶¶¶¶
+
+
+*)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(*
+Routine to apply a triangle wave shaped force via the pneumatic piston on the test stand
+to the hardpoint
+
+12/15/20 - CHANGED THE FORCE APPLIED TO A SAWTOOTH WAVE; CODE WAS LEFT IN FOR A TRIANGLE WAVE IN CASE A ROLLBACK IS DESIRED
+
+03/03/21 - CHANGED THE FORCE TO ONLY BE APPLIED TO CHANNEL 2, CHANNEL ONE VALUE SET TO CAUSE FORCE VALUE TO PASS THRU ZERO
+
+03/05/21 - ADDED CODE FOR OPTION TO PERFORM BOTH STIFFNESS AND BREAKAWAY TESTS DEPENDING ON WHAT IS (UN)COMMENTED OUT; REMOVED SAWTOOTH WAVE CODE\\
+
+03/29/21 - ADDED CODE TO APPLY FORCE  BETWEEN APPROXIMATELY +/- 300N IN ORDER TO OBSERVE BEHAVIOR OF SMALL DISPLACEMENTS ON HARDPOINTS
+
+08/11/21 - REMOVED REDUNDENT CODE, MADE PARTIONS EASIER TO LOCATE FOR (UN)COMMENTING CODE FOR CHANGING TESTS
+
+10/07/21 - REMOVED "SUPER SOAKER" EFFECT TEST, REORGANIZED TEST ORDER FOR EASE OF CHANGING TESTS
+
+2/27/22 - Condensed everything down to single function block for both breakaway and stiffness
+*)
+
+(*=====================================================================================================================================================*)
+
+// For the first quarter of the routine, apply a force one direction fully using one air valve
+IF Counter <= 4*Slope THEN
+	IF Counter < Slope THEN
+		GVL_TS.AirOut2 := REAL_TO_INT(Channel2Command/10*Force); // The dividand multiplle is what controls the force; 7500 => 750N;
+		Channel2Command := Channel2Command + 10/DINT_TO_REAL(Slope);
+		GVL_TS.AirOut1 := 0;
+
+// For the second quarter of the routine, back the force back off until we are at our starting point
+	ELSIF (Counter >= Slope AND Counter < 2*Slope)  THEN
+		GVL_TS.AirOut2 := REAL_TO_INT(Channel2Command/10*Force);
+		Channel2Command := Channel2Command - 10/DINT_TO_REAL(Slope);
+		GVL_TS.AirOut1 := 0;
+
+// For the third quarter of the routine, apply the force in the opposite direction using the other air valve
+	ELSIF (Counter >= 2*Slope AND Counter < 3*Slope) THEN
+		GVL_TS.AirOut1 := REAL_TO_INT(Channel1Command/10*Force);
+		Channel1Command := Channel1Command + 10/DINT_TO_REAL(Slope);
+		GVL_TS.AirOut2 := 0;
+
+// For the final quarter of the routine, back the force back off until we are again at our starting point
+	ELSIF Counter >= 3*Slope THEN
+		GVL_TS.AirOut1 := REAL_TO_INT(Channel1Command/10*Force);
+		Channel1Command := Channel1Command - 10/DINT_TO_REAL(Slope);
+		GVL_TS.AirOut2 := 0;
+	END_IF
+		
+	// Increment the Counter used to step through the routine
+	Counter := Counter +1;
+	
+	// If the Counter is greater than the number of steps we wish to use to run the test, reset to 0
+	IF Counter > 4*Slope THEN
+		Counter := 0;
+		Cycles := Cycles + 1;
+	END_IF
+
+	CyclesOut := Cycles;
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TriForce">
+      <LineId Id="839" Count="10" />
+      <LineId Id="1713" Count="0" />
+      <LineId Id="1712" Count="0" />
+      <LineId Id="1918" Count="1" />
+      <LineId Id="2002" Count="0" />
+      <LineId Id="2001" Count="0" />
+      <LineId Id="850" Count="1" />
+      <LineId Id="1796" Count="0" />
+      <LineId Id="1925" Count="0" />
+      <LineId Id="933" Count="31" />
+      <LineId Id="2000" Count="0" />
+      <LineId Id="965" Count="0" />
+      <LineId Id="2009" Count="0" />
+      <LineId Id="966" Count="1" />
+      <LineId Id="1626" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

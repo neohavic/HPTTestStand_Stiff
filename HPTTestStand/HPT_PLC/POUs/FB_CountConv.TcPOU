@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_CountConv" Id="{1e807885-6745-4d98-882c-3aa7e1b57558}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION FB_CountConv : REAL
+VAR_INPUT
+	COUNTS_IN 			: DINT;
+END_VAR
+VAR
+END_VAR
+VAR_OUTPUT
+	MEASC_OUT 			: REAL;
+	MEASF_OUT 			: REAL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Conversion for counts to mm -> distance [resolution (nm) * (nm -> mm) * # of counts]
+
+// Renishaw DIP-SWITCH CONFIG, 12/09/20
+// NOTE: CONSULT RENISHAW USER MANUAL FOR SWITCH SETTING CONFIGURATION BREAKDOWN
+
+// Switch Up   Switch Down
+//    [0]		  [-]
+//    [-]         [o]
+//
+// 15               1
+// [ooo-o---|o--o-o--]
+// [---o-ooo|-oo-o-oo]
+
+// Coarse resolution conversion
+MEASC_OUT := 79 * 0.000001 * COUNTS_IN;
+
+// Fine resolution conversion
+MEASF_OUT := 39.5 * 0.000001 * COUNTS_IN;
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_CountConv">
+      <LineId Id="41" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="93" Count="2" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="22" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

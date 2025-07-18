@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_ReadSig" Id="{21857c10-0931-4349-a349-fd7993e3f0a6}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ReadSig
+VAR_INPUT
+	sSrcNetId			: T_AmsNetId;	(* TwinCAT network address of the source file *)
+	sSrcPathName		: T_MaxString;	(* Source file path and name *)
+	bExecute			: BOOL;			(* Rising edge start fb execution *)
+	tTimeOut			: TIME := DEFAULT_ADS_TIMEOUT;(* Max. ADS timeout time *)
+END_VAR
+VAR_OUTPUT
+	bBusy				:BOOL;(* TRUE => File copy execution in progress, FALSE => File copy execution idle *)
+	bError				:BOOL;(* TRUE => Error, FALSE => No error *)
+	Step				:UDINT := 0;(* State *)
+	nErrId				:UDINT :=0; (*Err ID*)
+	cmd					: DINT := 0;
+END_VAR
+VAR
+	fbFileOpen			:FB_FileOpen;
+	fbFileClose			:FB_FileClose;
+	fbFileRead			: FB_FileRead;
+	RisingEdge			: R_TRIG;
+	hSrcFile			: UINT	:= 0;(* File handle of the source file *)
+//	Step				: DWORD;
+	cbReadLength		: UDINT := 0;
+	counter				: UDINT := 0;
+	k					: UDINT := 0;
+	buffRead			: ARRAY[1..60000] OF DINT ;(* Buffr *)
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[bExecute := MAIN.tglSine;
+
+IF k < 60000 THEN
+
+RisingEdge(CLK:=bExecute);
+
+IF fbFileRead.bEOF THEN
+	Step := 50;
+END_IF
+
+CASE Step OF
+	0:	(* Idle state *)
+		IF RisingEdge.Q THEN
+			bBusy := TRUE;
+			bError:= FALSE;
+			nErrId:=0;
+			Step := 1;
+			cbReadLength:=0;
+			hSrcFile:=0;
+		END_IF
+
+	1:	(* Open source file *)
+		fbFileOpen( bExecute := TRUE );
+		fbFileOpen( sNetId := sSrcNetId, sPathName := sSrcPathName,
+					nMode := FOPEN_MODEREAD,
+					ePath := PATH_GENERIC, tTimeout := tTimeOut, bExecute := TRUE );
+//		Step := Step + 1;
+(*
+	2:
+		fbFileOpen( bExecute := TRUE );
+		IF NOT fbFileOpen.bBusy THEN
+			IF fbFileOpen.bError THEN
+				nErrId := fbFileOpen.nErrId;
+				bError := TRUE;
+				Step := 50;
+			ELSE
+				hSrcFile := fbFileOpen.hFile;
+				Step := Step + 1;
+			END_IF
+		END_IF
+	3:	(* Read data from source file *)
+		cbReadLength := 0;
+		fbFileRead( bExecute:= TRUE );
+		fbFileRead( sNetId:=sSrcNetId, hFile:=hSrcFile,
+					pReadBuff:= ADR(buffRead), cbReadLen:= SIZEOF(buffRead),
+					bExecute:=TRUE, tTimeout:=tTimeOut );
+		Step := Step + 1;
+	4:
+		fbFileRead( bExecute:= TRUE );
+		IF NOT fbFileRead.bBusy THEN
+			IF fbFileRead.bEOF THEN (* Check if the EOF flag is set *)
+					Step := 50;	(* Cleanup: close the destination and source files *)
+			ELSE
+				counter := counter+1;
+				cbReadLength := fbFileRead.cbRead;
+				Step := 3;
+			END_IF
+			IF fbFileRead.bError THEN
+				nErrId := fbFileRead.nErrId;
+				bError := TRUE;
+				Step := 50;
+
+			END_IF
+		END_IF
+
+	40: (* Close source file *)
+		fbFileClose( bExecute := TRUE );
+		fbFileClose( sNetId:=sSrcNetId, hFile:=hSrcFile, bExecute:=TRUE, tTimeout:=tTimeOut );
+		Step := Step + 1;
+	41:
+		fbFileClose( bExecute := TRUE );
+		IF NOT fbFileClose.bBusy THEN
+			IF fbFileClose.bError THEN
+				nErrId := fbFileClose.nErrId;
+				bError := TRUE;
+			END_IF
+			Step := 50;
+			hSrcFile := 0;
+		END_IF
+	
+	// send the command	
+	5: 
+		k := k+1;
+		IF k <= 60000 THEN
+			cmd := buffRead[k];
+			step := 5;
+		ELSE
+			step := 0;
+		END_IF
+		
+	50: (* Error or ready => Cleanup *)
+		IF (hSrcFile <> 0 ) THEN
+			Step := 40; (* Close the source file *)
+		ELSE
+			Step := 5;	(* Ready *)
+			bBusy := FALSE;
+		END_IF
+*)
+END_CASE
+
+ELSE
+
+	//MAIN.tglSine := FALSE;
+
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ReadSig">
+      <LineId Id="38" Count="0" />
+      <LineId Id="213" Count="1" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="154" Count="3" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="41" Count="16" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="58" Count="69" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="216" Count="0" />
+      <LineId Id="215" Count="0" />
+      <LineId Id="217" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="219" Count="0" />
+      <LineId Id="218" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

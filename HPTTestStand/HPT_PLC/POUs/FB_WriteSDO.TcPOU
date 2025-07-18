@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_WriteSDO" Id="{71c405a5-07fb-4b2e-a3b2-bbe51622b060}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WriteSDO
+VAR_INPUT
+        nSlaveAddr      : UINT; 
+        nSubIndex       : BYTE; 
+        nIndex          : WORD;
+        pSrcBuf         : DWORD; 
+        cbBufLen        : UDINT; 
+        bExecute        : BOOL;
+        tTimeout        : TIME := DEFAULT_ADS_TIMEOUT;
+		nValueInt		: INT;
+		nValueDInt		: UDINT;
+		nValueBool		: BYTE;
+END_VAR
+VAR_OUTPUT
+	    bBusy           : BOOL;
+        bError          : BOOL;
+        nErrId          : UDINT;
+END_VAR
+VAR
+	fbSdoWriteInt      	: FB_EcCoESdoWrite;
+	fbSdoWriteDInt      : FB_EcCoESdoWrite;
+	fbSdoWriteBool      : FB_EcCoESdoWrite;
+	sNetId          	: T_AmsNetId := '10.10.160.129.2.1'; (* NetId of EtherCAT Master *)
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[/////////////////////////////////////////////////////////
+fbSdoWriteInt(
+        sNetId          := sNetId,
+        nSlaveAddr      := nSlaveAddr,
+        nIndex          := nIndex,
+        nSubIndex       := nSubIndex,
+        pSrcBuf         := ADR(nValueInt),
+        cbBufLen        := SIZEOF(nValueInt),
+        bExecute        := bExecute
+);
+
+IF NOT fbSdoWriteInt.bBusy THEN
+        bExecute := FALSE;
+        IF NOT bError THEN 
+                (* write successful *)
+                bError := FALSE;
+                nErrId := 0;
+        ELSE 
+                (* write failed *)
+                bError := fbSdoWriteInt.bError;
+                nErrId := fbSdoWriteInt.nErrId;
+        END_IF
+
+        fbSdoWriteInt(bExecute := FALSE);
+END_IF
+/////////////////////////////////////////////////////////
+fbSdoWriteDInt(
+        sNetId          := sNetId,
+        nSlaveAddr      := nSlaveAddr,
+        nIndex          := nIndex,
+        nSubIndex       := nSubIndex,
+        pSrcBuf         := ADR(nValueDInt),
+        cbBufLen        := SIZEOF(nValueDInt),
+        bExecute        := bExecute
+);
+
+IF NOT fbSdoWriteDInt.bBusy THEN
+        bExecute := FALSE;
+        IF NOT bError THEN 
+                (* write successful *)
+                bError := FALSE;
+                nErrId := 0;
+        ELSE 
+                (* write failed *)
+                bError := fbSdoWriteDInt.bError;
+                nErrId := fbSdoWriteDInt.nErrId;
+        END_IF
+
+        fbSdoWriteDInt(bExecute := FALSE);
+END_IF
+/////////////////////////////////////////////////////////
+fbSdoWriteBool(
+        sNetId          := sNetId,
+        nSlaveAddr      := nSlaveAddr,
+        nIndex          := nIndex,
+        nSubIndex       := nSubIndex,
+        pSrcBuf         := ADR(nValueBool),
+        cbBufLen        := SIZEOF(nValueBool),
+        bExecute        := bExecute
+);
+
+IF NOT fbSdoWriteBool.bBusy THEN
+        bExecute := FALSE;
+        IF NOT bError THEN 
+                (* write successful *)
+                bError := FALSE;
+                nErrId := 0;
+        ELSE 
+                (* write failed *)
+                bError := fbSdoWriteBool.bError;
+                nErrId := fbSdoWriteBool.nErrId;
+        END_IF
+
+        fbSdoWriteBool(bExecute := FALSE);
+END_IF
+/////////////////////////////////////////////////////////]]></ST>
+    </Implementation>
+    <LineIds Name="FB_WriteSDO">
+      <LineId Id="144" Count="0" />
+      <LineId Id="20" Count="8" />
+      <LineId Id="30" Count="13" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="68" Count="9" />
+      <LineId Id="125" Count="13" />
+      <LineId Id="78" Count="1" />
+      <LineId Id="145" Count="7" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="95" Count="13" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="153" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_PyPosRep" Id="{273ae98a-b13f-4a74-9444-a66cd928b289}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PyPosRep
+VAR_INPUT
+	bExecute			: BOOL := FALSE;
+	Initialized 		: BOOL := FALSE;
+	Init_State  		: UINT := 0;
+END_VAR
+VAR_OUTPUT
+	bIsBusy				: BOOL;
+    ERR             	: BOOL;
+    ERRID           	: UDINT;
+END_VAR
+VAR
+	Process         	: NT_StartProcess;
+	RisingEdge			: R_TRIG;
+	bError          	: BOOL;
+    sTargetFilePath     : STRING(255);
+    sTargetDirectory    : STRING(255);
+    sCommand        	: STRING(255);
+    iErrorId            : UDINT; 	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT Initialized THEN
+  (* Initialization State Machine *)
+  CASE Init_State OF
+    0: (* First step in initialization *)
+	
+		// File Locations
+		sTargetDirectory := 'C:\HPTTestStand_Stiff\attocubes4austin\';
+ 
+		// Build Command String                 
+		// Special command indicating command string input
+		sCommand := CONCAT(sTargetDirectory, 'AttoCube_PosRep_Readout_3.py');      // Execute Python data collection script
+        //sCommand := CONCAT(sTargetDirectory, 'Position_Move_Test.py');
+		Init_State := Init_State + 1;
+	   
+    1: (* Second step in initialization *)
+		Process(
+    	NETID := '',                    					// Local System
+		PATHSTR := 'python',   // Path to local cmd executable
+    	COMNDLINE := sCommand,          					// Comnmand to be executed
+    	ERR => bError,                   					// Error Output
+    	ERRID => iErrorId,                					// Error Id Output
+		BUSY => bIsBusy,									// Process is already busy, used to not call multiple instances
+		START := TRUE
+		);
+        Init_State := Init_State + 1;
+
+    2: (* Last step in initialization *)
+		Process(START := FALSE);
+		bExecute := FALSE;
+		RisingEdge.CLK := FALSE;
+        Initialized := TRUE;
+  END_CASE
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_PyPosRep">
+      <LineId Id="28" Count="11" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="40" Count="18" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

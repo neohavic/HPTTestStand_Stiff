@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <ImagePool Name="ImagePool" Id="{1b684dfb-a9c7-4af5-b4b1-f971865f5ea4}">
+    <XmlArchive>
+      <Data>
+        <o xml:space="preserve" t="ImagePoolObject">
+          <v n="UniqueIdGenerator">"2"</v>
+          <l n="BitmapPool" t="ArrayList" cet="ImagePoolItem">
+            <o>
+              <v n="BitmapID">"cartoon-watercolor-tree-silhouette-frame"</v>
+              <v n="FileID">"5ce3da45-db07-42e7-a21c-a00fff4ed8f6|C:\HPTTestStand\HPTTS_HMI\Images\cartoon-watercolor-tree-silhouette-frame.jpg"</v>
+              <v n="ItemID">2</v>
+            </o>
+            <o>
+              <v n="BitmapID">""</v>
+              <v n="FileID">""</v>
+              <v n="ItemID">1</v>
+            </o>
+          </l>
+          <v n="GuidInit">{85393200-9fd7-418f-a277-da26c28e5d9f}</v>
+          <v n="GuidReInit">{b77570c5-5c32-436a-a55f-ef761410b74f}</v>
+          <v n="GuidExitX">{45eeca04-8a1f-4752-bf9e-8df7521f3833}</v>
+          <v n="ValidIds">false</v>
+        </o>
+      </Data>
+      <TypeList>
+        <Type n="ArrayList">System.Collections.ArrayList</Type>
+        <Type n="Boolean">System.Boolean</Type>
+        <Type n="Guid">System.Guid</Type>
+        <Type n="ImagePoolItem">{215b2719-0347-4e4d-ba85-8bcd66946f66}</Type>
+        <Type n="ImagePoolObject">{bb0b9044-714e-4614-ad3e-33cbdf34d16b}</Type>
+        <Type n="Int32">System.Int32</Type>
+        <Type n="String">System.String</Type>
+      </TypeList>
+    </XmlArchive>
+  </ImagePool>
+</TcPlcObject>

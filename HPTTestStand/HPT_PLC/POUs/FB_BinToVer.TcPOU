@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_BinToVer" Id="{c3c925b6-d887-4007-9319-622aa4e37ab8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_BinToVer
+VAR_INPUT
+	BinInput 			: UINT;
+END_VAR
+VAR_OUTPUT
+	MtrErrArr 			: ARRAY[0..15] OF BOOL;
+END_VAR
+VAR
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Read in status word from drive amp, read it out bit-wise, write each bit to a corresponding array position, and pass
+// the entire array back for the main program to be able to read out and set the verbose error messages on the HMI
+
+MtrErrArr[0] := BinInput.0;
+MtrErrArr[1] := BinInput.1;
+MtrErrArr[2] := BinInput.2;
+MtrErrArr[3] := BinInput.3;
+MtrErrArr[4] := BinInput.4;
+MtrErrArr[5] := BinInput.5;
+MtrErrArr[6] := BinInput.6;
+MtrErrArr[7] := BinInput.7;
+MtrErrArr[8] := BinInput.8;
+MtrErrArr[9] := BinInput.9;
+MtrErrArr[10] := BinInput.10;
+MtrErrArr[11] := BinInput.11;
+MtrErrArr[12] := BinInput.12;
+MtrErrArr[13] := BinInput.13;
+MtrErrArr[14] := BinInput.14;
+MtrErrArr[15] := BinInput.15;]]></ST>
+    </Implementation>
+    <LineIds Name="FB_BinToVer">
+      <LineId Id="122" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="123" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="96" Count="14" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

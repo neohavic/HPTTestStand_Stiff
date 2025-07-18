@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_SineSweep" Id="{868a0ffc-ebb0-48ec-a931-f0b8d74d1581}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_SineSweep
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR (*file read/write*)
+	fbReadSig				: FB_ReadSig;
+	fbSaveData				: FB_SaveData;
+	bSaveData				: BOOL; 
+	VelCmd					: DINT := 0;
+	State					: UDINT;
+	k						: UDINT :=1;
+	Counter					: UDINT;
+	PosCmdArray				: ARRAY[1..60000,1..3] OF UDINT ;
+END_VAR
+
+VAR (*Drive variables*)
+	pos_rb AT %I*			: DINT;
+	vel_rb AT %I*			: DINT;
+	vel_target AT %Q*		: DINT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF GVL_TS.bEnableState = TRUE THEN
+
+// NetID can be found under "Devices/Device 1 (EtherCAT) -> EtherCAT Tab
+fbReadSig(
+	sSrcNetId := '10.10.160.129.1.1',  
+	sSrcPathName := 'C:\HPTTestStand\HPsinesweep\excitation500Hz_multisine_of500.bin', // .BIN file *MUST* be present in this location!
+	bExecute := TRUE, 
+	tTimeOut := T#5S,
+	Step => State,
+	cmd => VelCmd );
+	IF (State = 5 AND k <= 60000) THEN
+		GVL_TS.target_vel := VelCmd;
+		PosCmdArray[k,1] := vel_target;
+		PosCmdArray[k,2] := vel_rb;	
+		PosCmdArray[k,3] := pos_rb;
+		k := k+1;
+	END_IF
+
+IF bSaveData THEN
+	fbSaveData(
+	sDestNetId := '10.10.160.129.2.1', 
+	sDestPathName := 'C:\HPTTestStand\HPsinesweep\test_veloffset5000.bin', // .BIN file *MUST* be present in this location!
+	bExecute := TRUE, 
+	tTimeOut := T#5S,
+	///buffRead := ADR(PosCmdArray),
+	cbWriteLen := SIZEOF(PosCmdArray),
+	);
+END_IF
+
+Counter := Counter + 1;
+
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_SineSweep">
+      <LineId Id="92" Count="0" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="17" Count="13" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="35" Count="8" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="96" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

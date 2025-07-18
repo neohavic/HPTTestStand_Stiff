@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_SerialCom" Id="{181e7c70-138b-446a-a6f5-34e588388885}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_SerialCom
+VAR_IN_OUT
+	TxBuffer			: ComBuffer;
+	RxBuffer			: ComBuffer;
+END_VAR
+VAR
+	fbReceive			: ReceiveString;
+	sReceivedString		: STRING;
+	bStringReceived		: BOOL;
+	bReceiveBusy		: BOOL;
+	bReceiveError		: BOOL;
+	eReceiveErrorID		: ComError_t;
+	bReceiveTimeout		: BOOL;
+END_VAR
+VAR_OUTPUT
+	sHeidOut 			: STRING;
+	Error				: BOOL := FALSE;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//	Receive string data:
+//	The block receives any data strings beginning with a STX ($02) and ending with an ETX ($03) character.	
+fbReceive(
+	Prefix:= '',
+	Suffix:= '',
+	Timeout:= T#1s,
+	ReceivedString := sHeidOut,
+	RXbuffer:= RxBuffer,
+	StringReceived=> bStringReceived,
+	Busy => bReceiveBusy,
+	Error => ,
+	RxTimeout => bReceiveTimeout );
+IF fbReceive.Error <> COMERROR_NOERROR THEN
+	eReceiveErrorID := fbReceive.Error;
+	//Error := TRUE;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_SerialCom">
+      <LineId Id="17" Count="13" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="31" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

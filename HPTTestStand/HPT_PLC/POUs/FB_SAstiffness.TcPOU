@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_SAstiffness" Id="{0554bc39-3a5f-4c1e-b75b-b43e140973bf}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_SAstiffness
+VAR_INPUT
+	cycles : INT := 0;
+END_VAR
+VAR_OUTPUT
+	cyclesOut : INT := 0;
+	force : REAL := 0;
+END_VAR
+VAR
+	counter : INT := 0;
+	sign : REAL := 1;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[counter := counter + 1;
+
+IF counter = 50 THEN
+	force := force + sign;
+	counter := 0;
+END_IF
+
+IF force = 500 THEN
+	sign := -1;
+	cycles := cycles + 1;
+END_IF
+
+IF force = -500 THEN
+	sign := 1;
+	cycles := cycles + 1;
+END_IF
+
+cyclesOut := cycles;
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_SAstiffness">
+      <LineId Id="31" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="34" Count="1" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="29" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

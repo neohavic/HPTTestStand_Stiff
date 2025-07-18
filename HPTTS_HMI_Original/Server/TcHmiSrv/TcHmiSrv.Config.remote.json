@@ -1,0 +1,15 @@
+{
+    "CERTIFICATEEXPIRATION": "P14000D",
+    "REQUIREAUTH": 0,
+    "VIRTUALDIRECTORIES": {
+        "/": "C:\\HPTTestStand\\HPTTS_HMI",
+        "/Beckhoff.TwinCAT.HMI.Controls": "C:\\HPTTestStand\\Packages\\Beckhoff.TwinCAT.HMI.Controls.12.750.1\\runtimes\\native1.12-tchmi",
+        "/Beckhoff.TwinCAT.HMI.EventLogger": "C:\\HPTTestStand\\Packages\\Beckhoff.TwinCAT.HMI.EventLogger.12.746.3",
+        "/Beckhoff.TwinCAT.HMI.Functions": "C:\\HPTTestStand\\Packages\\Beckhoff.TwinCAT.HMI.Functions.12.750.1\\runtimes\\native1.12-tchmi",
+        "/Beckhoff.TwinCAT.HMI.RecipeManagement": "C:\\HPTTestStand\\Packages\\Beckhoff.TwinCAT.HMI.RecipeManagement.12.746.3",
+        "/Beckhoff.TwinCAT.HMI.SqliteHistorize": "C:\\HPTTestStand\\Packages\\Beckhoff.TwinCAT.HMI.SqliteHistorize.12.746.3",
+        "/bin": "C:\\HPTTestStand\\HPTTS_HMI\\bin\\",
+        "/bin/framework": "C:\\HPTTestStand\\HPTTS_HMI\\bin\\framework",
+        "/framework": "C:\\HPTTestStand\\Packages\\Beckhoff.TwinCAT.HMI.Framework.12.750.1\\runtimes\\native1.12-tchmi"
+    }
+}

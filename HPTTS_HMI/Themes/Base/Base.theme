@@ -1,0 +1,12 @@
+{
+  "controlTypeValues": {
+    "TcHmi.Controls.Beckhoff.TcHmiTextblock": {
+      "attributes": {
+        "TextColor": null
+      },
+      "themedResources": {}
+    }
+  },
+  "controlClassValues": {},
+  "$schema": "../../../Packages/Beckhoff.TwinCAT.HMI.Framework.12.742.1/runtimes/native1.12-tchmi/Schema/ThemeDescription.Schema.json"
+}

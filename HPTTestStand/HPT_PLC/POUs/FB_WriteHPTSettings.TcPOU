@@ -1,0 +1,281 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_WriteHPTSettings" Id="{184ad57b-2912-4b22-abd5-636de5b01f6d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WriteHPTSettings
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	WriteSetting	: FB_WriteSDO;
+	Step			: INT := 1;
+	Debug1			: BOOL;
+	DebugSize2		: BYTE;
+	err				: BOOL;
+	errId			: UDINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE Step OF
+
+1:
+// Write Thermocouple Ch1 settings
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8000,
+	nSubIndex := 16#01,
+	bExecute := TRUE,
+	nValueBool := 16#01
+);
+
+Debug1 := TO_BOOL(WriteSetting.nValueBool);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+2:
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8000,
+	nSubIndex := 16#07,
+	nValueBool := 16#01,
+	bExecute := TRUE
+);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+3:
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8000,
+	nSubIndex := 16#08,
+	nValueBool := 16#01,
+	bExecute := TRUE
+);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+4:
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8000,
+	nSubIndex := 16#12,
+	nValueDInt := 31451,
+	bExecute := TRUE
+);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+5:
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8000,
+	nSubIndex := 16#13,
+	nValueInt := -730,
+	bExecute := TRUE
+);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+6:
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8000,
+	nSubIndex := 16#14,
+	nValueInt := 4820,
+	bExecute := TRUE
+);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+7:
+// Write Thermocouple Ch2 settings
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8010,
+	nSubIndex := 16#01,
+	nValueBool := 16#01,
+	bExecute := TRUE
+);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+8:
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8010,
+	nSubIndex := 16#07,
+	nValueBool := 16#01,
+	bExecute := TRUE
+);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+9:
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8010,
+	nSubIndex := 16#08,
+	nValueBool := 16#01,
+	bExecute := TRUE
+);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+10:
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8010,
+	nSubIndex := 16#12,
+	nValueDInt := 31451,
+	bExecute := TRUE
+);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+11:
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8010,
+	nSubIndex := 16#13,
+	nValueInt := -730,
+	bExecute := TRUE
+);
+
+IF WriteSetting.bBusy = FALSE THEN
+	Step := Step +1;
+END_IF
+
+12:
+WriteSetting(
+	nSlaveAddr := 1011,
+	nIndex := 16#8010,
+	nSubIndex := 16#14,
+	nValueInt := 4820,
+	bExecute := TRUE,
+	bError => err,
+	nErrId => errid
+);
+
+(*
+// Write EL5042 encoder settings to enable correct readout
+WriteSetting(
+	nSlaveAddr := 1010,
+	nIndex := 16#8008,
+	nSubIndex := 16#15,
+	nValue := 26,
+	bExecute := TRUE
+);
+
+WriteSetting(
+	nSlaveAddr := 1010,
+	nIndex := 16#8008,
+	nSubIndex := 16#16,
+	nValue := 0,
+	bExecute := TRUE
+);
+
+WriteSetting(
+	nSlaveAddr := 1010,
+	nIndex := 16#8018,
+	nSubIndex := 16#15,
+	nValue := 26,
+	bExecute := TRUE
+);
+
+WriteSetting(
+	nSlaveAddr := 1010,
+	nIndex := 16#8018,
+	nSubIndex := 16#16,
+	nValue := 0,
+	bExecute := TRUE
+);
+*)
+Step := 1;
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_WriteHPTSettings">
+      <LineId Id="142" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="152" Count="0" />
+      <LineId Id="11" Count="4" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="221" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="169" Count="0" />
+      <LineId Id="171" Count="1" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="19" Count="7" />
+      <LineId Id="174" Count="2" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="27" Count="7" />
+      <LineId Id="178" Count="2" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="35" Count="7" />
+      <LineId Id="182" Count="2" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="43" Count="7" />
+      <LineId Id="186" Count="2" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="51" Count="7" />
+      <LineId Id="190" Count="2" />
+      <LineId Id="189" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="59" Count="8" />
+      <LineId Id="194" Count="2" />
+      <LineId Id="193" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="68" Count="7" />
+      <LineId Id="198" Count="2" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="76" Count="7" />
+      <LineId Id="202" Count="2" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="84" Count="7" />
+      <LineId Id="206" Count="2" />
+      <LineId Id="205" Count="0" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="92" Count="7" />
+      <LineId Id="210" Count="2" />
+      <LineId Id="209" Count="0" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="100" Count="6" />
+      <LineId Id="217" Count="1" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="167" Count="0" />
+      <LineId Id="108" Count="31" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="153" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

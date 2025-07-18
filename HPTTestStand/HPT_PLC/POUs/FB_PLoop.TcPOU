@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_PLoop" Id="{eef61a14-143a-46d7-990b-eb53fbcd190e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PLoop
+VAR_INPUT
+	fSetpointValue					: REAL ;
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	fbPID 							: FB_CTRL_PID;
+	stCTRL_PID_PARAMS				: ST_CTRL_PID_PARAMS;
+	eErrorId						: E_CTRL_ERRORCODES;
+	eMode							: E_CTRL_MODE;
+	//fActualValue					: REAL;
+	fManSyncValue					: REAL;
+	fOut							: REAL;
+	//pos_offset					: REAL ;
+	//pos_cmd						: REAL ;
+	//mir_adjusted					: REAL;
+	bHold							: BOOL;
+	bError							: BOOL;
+	bARWactive						: BOOL;
+	bSync							: BOOL;
+	bInit							: BOOL	:= TRUE;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bInit THEN
+	(* init parameter struct *)
+	stCTRL_PID_PARAMS.tCtrlCycleTime		:= T#10ms;
+	stCTRL_PID_PARAMS.tTaskCycleTime		:= T#10ms;
+	stCTRL_PID_PARAMS.fKp					:= 5000.0;			(* proportional gain Kp				*)
+	stCTRL_PID_PARAMS.tTn					:= T#0MS;		(*  Tn								*)
+	stCTRL_PID_PARAMS.tTv					:= T#0MS;			(*  Tv								*)
+	stCTRL_PID_PARAMS.tTd					:= T#0MS;			(*  Td								*)
+	stCTRL_PID_PARAMS.fOutMaxLimit			:= (10921800);	(* maximum output limit				*)
+	stCTRL_PID_PARAMS.fOutMinLimit			:= (-10921800);	(* minimum output limit				*)
+	stCTRL_PID_PARAMS.bDInTheFeedbackPath	:= FALSE;
+	stCTRL_PID_PARAMS.bDInTheFeedbackPath	:= FALSE;
+	stCTRL_PID_PARAMS.bARWOnIPartOnly		:= TRUE;
+
+	(* set the mode to ACTIVE --> normal operation *)
+	eMode := eCTRL_MODE_ACTIVE;
+
+	(* reset the init flag *)
+	bInit := FALSE;
+END_IF
+
+GVL_TS.control_word := 31;
+
+(* call controller *)
+fbPID(			fSetpointValue		:= fSetpointValue ,
+				fActualValue		:= GVL_TS.ActEncCount,
+				fManSyncValue		:= fManSyncValue,
+				bSync				:= bSync,
+				eMode				:= eMode,
+				bHold				:= bHold,
+				stParams			:= stCTRL_PID_PARAMS,
+				fOut				=> fOut,
+				bARWactive			=> bARWactive,
+				eErrorId			=> eErrorId,
+				bError				=> bError
+				);
+				
+GVL_TS.target_vel := TO_DINT(fbPID.fOut);
+GVL_TS.Pdiff := GVL_TS.ActEncCount - fSetpointValue;]]></ST>
+    </Implementation>
+    <LineIds Name="FB_PLoop">
+      <LineId Id="30" Count="9" />
+      <LineId Id="103" Count="2" />
+      <LineId Id="40" Count="8" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="52" Count="13" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="68" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

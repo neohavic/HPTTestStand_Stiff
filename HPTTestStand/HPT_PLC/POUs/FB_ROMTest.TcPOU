@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_ROMTest" Id="{e32fe4b5-8756-4c1b-98d6-dc9ff11f51b5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ROMTest
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+	ROM_act 			: REAL := 0; (*mm*)
+	ROM_mirr 			: REAL := 0; (*mm*)
+	ROM_ActMid 			: ULINT := 0; (*cts*)
+	ROM_MirrMid 		: ULINT := 0; (*cts*)
+END_VAR
+VAR
+	Flip 				: INT := 1;
+	ActPosLim 			: ULINT;
+	ActNegLim 			: ULINT;
+	MirPosLim 			: ULINT;
+	MirNegLim 			: ULINT;
+	MtrPosP 			: DINT;
+	MtrPosN 			: DINT;
+	bLimCap 			: BOOL := FALSE;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(*
+
+1092180 = 500 RPM
+2184533 = 1000 RPM
+
+*)
+
+IF GVL_TS.bEnableState = TRUE THEN
+
+(*calculate ROM*)
+ROM_act := ULINT_TO_REAL(ActPosLim - ActNegLim)*5E-6;
+ROM_mirr := ULINT_TO_REAL(MirPosLim - MirNegLim)*5E-6;
+ROM_ActMid := (((ActPosLim - ActNegLim) / 2) + ActNegLim);
+ROM_MirrMid := (((MirPosLim - MirNegLim) / 2) + MirNegLim);
+
+IF GVL_TS.bEnableState THEN (*if motor is enabled, start test*)
+	
+	// If neither limit switch is enabled, move until one is reached
+	IF NOT GVL_TS.bLim_pos AND NOT GVL_TS.bLim_neg THEN
+		GVL_TS.target_vel := flip*LREAL_TO_DINT((1092180) * 10); // 500 RPM
+		//GVL_TS.target_vel := flip*LREAL_TO_DINT((1092180) * 2); // 100 RPM
+		bLimCap := FALSE; 
+	END_IF
+	
+	// If positive limit reached, reverse direction and continue
+//	IF (GVL_TS.bLim_pos := TRUE) THEN
+	IF (GVL_TS.bLim_pos = TRUE) AND (bLimCap = FALSE) THEN
+		ActPosLim := GVL_TS.ActEncCount;
+		MirPosLim := GVL_TS.MirEncCount;
+		MtrPosP := GVL_TS.mtr_pos;
+		GVL_TS.target_vel := LREAL_TO_DINT(-(1092180) * 10);
+		//GVL_TS.target_vel := LREAL_TO_DINT(-(1092180) * 2);
+		Flip := -1;
+		bLimCap := TRUE;	
+	END_IF
+	
+	// If negative limit reached, reverse direction and continue
+//	IF (GVL_TS.bLim_neg := TRUE) THEN
+	IF (GVL_TS.bLim_neg = TRUE) AND (bLimCap = FALSE) THEN
+		ActNegLim := GVL_TS.ActEncCount;
+		MirNegLim := GVL_TS.MirEncCount;
+		MtrPosN := GVL_TS.mtr_pos;
+		GVL_TS.target_vel := LREAL_TO_DINT((1092180) * 10);
+		//GVL_TS.target_vel := LREAL_TO_DINT((1092180) * 2);
+		Flip := 1;
+		bLimCap := TRUE;
+	END_IF	
+END_IF
+
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ROMTest">
+      <LineId Id="350" Count="0" />
+      <LineId Id="353" Count="2" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="351" Count="0" />
+      <LineId Id="356" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="56" Count="3" />
+      <LineId Id="308" Count="1" />
+      <LineId Id="64" Count="2" />
+      <LineId Id="226" Count="0" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="375" Count="0" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="227" Count="1" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="330" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="376" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="229" Count="1" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="76" Count="1" />
+      <LineId Id="331" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="201" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

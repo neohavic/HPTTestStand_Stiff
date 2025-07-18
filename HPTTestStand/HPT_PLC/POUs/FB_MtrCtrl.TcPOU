@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_MtrCtrl" Id="{941f7e40-8107-446f-bb8f-f83c472ed7db}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION FB_MtrCtrl 		: BOOL
+VAR_INPUT	
+END_VAR
+VAR_OUTPUT
+	bBtnEnb 			: BOOL;
+END_VAR
+VAR
+	StickyRead 			: UDINT;
+	EncoderFaultRead 	: UDINT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* 
+	-=CONTROL WORD DESCRIPTION=-
+	
+	BIT 0: ENABLE AMP WHEN HIGH
+	BIT 1: ENABLE VOLTAGE WHEN HIGH
+	BIT 2: QUICK STEP DISABLE WHEN CLEAR
+	BIT 3: ENABLE AMP WHEN HIGH
+	BIT 4: OPERATION MODE SPECIFIC
+	BIT 5: OPERATION MODE SPECIFIC
+	BIT 6: OPERATION MODE SPECIFIC
+	BIT 7: RESET FAULT WHEN LOW TO HIGH DETECTED
+	BIT 8: HALT WHEN HIGH
+	BITS 9-15: RESERVED FOR FUTURE USE
+*)
+
+IF GVL_TS.bEnable = TRUE THEN (*Enable the motor*)
+	GVL_TS.control_word := 16#0000; // 0, 0x0000, 0b00000000
+	GVL_TS.control_word := 16#0080; // 128, 0x0080, 0b10000000
+	GVL_TS.control_word := 16#0006; // 6, 0x0006, 0b00000110
+	GVL_TS.control_word := 16#0007; // 7, 0x0007, 0b00000111
+	GVL_TS.control_word := 16#001F; // 31, 0x001f, 0b00011111
+ELSIF GVL_TS.bEnable = FALSE THEN (*disable the motor*)
+	GVL_TS.control_word := 2#00000110; //16#0007; // 6, 0x0006, 0b00000110
+	GVL_TS.target_vel := 0; // 0, 0x0000, 0b00000000
+END_IF
+
+
+(*
+	-=STATUS WORD DESCRIPTION=-
+	
+	BIT 0: READY TO SWITCH ON
+	BIT 1: SWITCHED ON
+	BIT 2: OPERATION ENABLED
+	BIT 3: (LATCHED, IF SET) FAULT
+	BIT 4: VOLTAGE ENABLED
+	BIT 5: QUICK STOP; IF CLEAR, AMP IS PERFORMING A QUICK STOP
+	BIT 6: SWITCH ON DISABLED
+	BIT 7: WARNING
+	BIT 8: LAST TRAJECTORY ABORTED
+	BIT 9: REMOTE CONTROL ENABLED THROUGH CANopen
+	BIT 10: TARGET REACHED; NOT CLEARED UNTIL NEW TRAJECTORY STARTED
+	BIT 11: INTERNAL LIMIT ACTIVE
+	BIT 12: OPERATION SPECIFIC; POSITION: SET POINT ACKNOWLADGED, VELOCITY: SPEED = 0
+	BIT 13: OPERATION SPECIFIC; POSITION: FOLLOWING ERROR, VELOCITY: MAX SLIPPAGE ERROR
+	BIT 14: AMP IS PERFORMING A MOVE
+	BIT 15: SET WHEN HOME POSITION CAPTURED
+*)
+
+IF GVL_TS.status_word.2 = TRUE THEN(*read bit 2 to check if motor is enabled*)
+	GVL_TS.bEnableState := TRUE;
+	bBtnEnb := TRUE;
+ELSE
+	GVL_TS.bEnableState := FALSE;
+	bBtnEnb := FALSE;
+END_IF
+
+IF GVL_TS.bReset THEN
+	GVL_TS.control_word := 0; //0x00000000
+	GVL_TS.control_word := 16#8F; //0x008f, 0b10000111
+	GVL_TS.control_word := 0;
+	GVL_TS.TransitionFromQS := 3;
+	GVL_TS.StopAbort := 0;
+	GVL_TS.ClearLatched2183 := 16#FFFFFFFF;
+	GVL_TS.ClearLatched2183 := 16#00000000;
+	GVL_TS.ClearLatched2183.7 := 1;
+	GVL_TS.ClearLatched2181 := 16#FFFFFFFF;
+	GVL_TS.ClearLatched2181 := 16#00000000;
+	StickyRead := GVL_TS.Sticky;
+	EncoderFaultRead := GVL_TS.EncoderFault;
+	GVL_TS.bEnableState := FALSE;
+	GVL_TS.bReset := FALSE;
+END_IF
+
+(*check limit switches*)
+IF (GVL_TS.DIO_status.0) = FALSE AND (GVL_TS.DIO_status.1) = FALSE THEN  // 0x043f0008, 0b100001111110000000000001000
+	GVL_TS.bLim_neg := FALSE;
+	GVL_TS.bLim_pos := FALSE;
+END_IF
+
+IF (GVL_TS.DIO_status.0) = FALSE AND (GVL_TS.DIO_status.1) = TRUE THEN  // 0x043b000a, 0b100001111110000000000001010
+	GVL_TS.bLim_neg := FALSE;
+	GVL_TS.bLim_pos := TRUE;
+END_IF
+
+IF (GVL_TS.DIO_status.0) = TRUE AND (GVL_TS.DIO_status.1) = FALSE  THEN  // 0x04370009, 0b100001111110000000000001001
+	GVL_TS.bLim_neg := TRUE;
+	GVL_TS.bLim_pos := FALSE;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_MtrCtrl">
+      <LineId Id="72" Count="1" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="79" Count="9" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="292" Count="0" />
+      <LineId Id="298" Count="0" />
+      <LineId Id="294" Count="3" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="362" Count="1" />
+      <LineId Id="365" Count="18" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="272" Count="0" />
+      <LineId Id="275" Count="5" />
+      <LineId Id="273" Count="0" />
+      <LineId Id="170" Count="4" />
+      <LineId Id="401" Count="1" />
+      <LineId Id="175" Count="1" />
+      <LineId Id="432" Count="0" />
+      <LineId Id="391" Count="1" />
+      <LineId Id="433" Count="0" />
+      <LineId Id="436" Count="0" />
+      <LineId Id="177" Count="1" />
+      <LineId Id="169" Count="0" />
+      <LineId Id="410" Count="14" />
+      <LineId Id="14" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

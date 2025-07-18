@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_PLCTime" Id="{a5d7e61a-069c-4933-9ab6-1c2c5894ac9a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PLCTime
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+	sTime				: STRING;
+END_VAR
+VAR
+	fbGetTime			: NT_GetTime;
+	TimeStr				: TIMESTRUCT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbGetTime(
+	START := TRUE,
+	NETID := '',
+	TIMESTR => TimeStr
+	);
+fbGetTime(
+	START := FALSE,
+	NETID := ''
+	);
+	
+sTime := CONCAT(TO_STRING(TimeStr.wHour), ':'); 
+IF TimeStr.wMinute < 10 THEN
+	sTime := CONCAT(sTime, '0');
+	sTime := CONCAT(sTime, TO_STRING(TimeStr.wMinute));
+ELSE
+	sTime := CONCAT(sTime, TO_STRING(TimeStr.wMinute));	
+END_IF 
+sTime := CONCAT(sTime, ':');
+IF TimeStr.wSecond < 10 THEN
+	sTime := CONCAT(sTime, '0');
+	sTime := CONCAT(sTime, TO_STRING(TimeStr.wSecond));
+ELSE
+	sTime := CONCAT(sTime, TO_STRING(TimeStr.wSecond));	
+END_IF
+sTime := CONCAT(sTime, '.');
+sTime := CONCAT(sTime, TO_STRING(TimeStr.wMilliseconds));]]></ST>
+    </Implementation>
+    <LineIds Name="FB_PLCTime">
+      <LineId Id="11" Count="10" />
+      <LineId Id="33" Count="4" />
+      <LineId Id="22" Count="8" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

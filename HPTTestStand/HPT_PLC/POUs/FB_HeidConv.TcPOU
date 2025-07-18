@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_HeidConv" Id="{aaba04ae-91ec-4ea6-b44c-32fc3fd03f29}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_HeidConv
+VAR_INPUT
+	sHeidIn 			: STRING;
+END_VAR
+VAR_OUTPUT
+	s1 					: STRING;
+	s2 					: STRING;
+	s3 					: STRING;
+	s4 					: STRING;
+END_VAR
+VAR
+	PosA 				: INT;
+	PosB 				: INT;
+	PosC 				: INT;
+	PosD 				: INT;
+	PosE 				: INT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Strip out "A" measurement"
+PosA := FIND(sHeidIn, 'A');
+PosB := FIND(sHeidIn, 'B');
+s1 := sHeidIn;
+s1 := DELETE(sHeidIn, LEN(sHeidIn) - PosB + 1, posB);
+s1 := DELETE(s1, PosA, 1);
+
+
+// Strip out "B" measurement
+PosB := FIND(sHeidIn, 'B');
+PosC := FIND(sHeidIn, 'C');
+s2 := sHeidIn;
+s2 := DELETE(sHeidIn, LEN(sHeidIn) - PosC + 1, PosC);
+s2 := DELETE(s2, PosB, 1);
+
+// Strip out "C" measurement"
+PosC := FIND(sHeidIn, 'C');
+PosD := FIND(sHeidIn, 'D');
+s3 := sHeidIn;
+s3 := DELETE(sHeidIn, LEN(sHeidIn) - PosD + 1, PosD);
+s3 := DELETE(s3, PosC, 1);
+
+// Strip out "D" measurement"
+PosD := FIND(sHeidIn, 'D');
+PosE := FIND(sHeidIn, 'E');
+s4 := sHeidIn;
+s4 := DELETE(sHeidIn, LEN(sHeidIn) - PosE + 1, PosE);
+s4 := DELETE(s4, PosD, 1);]]></ST>
+    </Implementation>
+    <LineIds Name="FB_HeidConv">
+      <LineId Id="18" Count="0" />
+      <LineId Id="108" Count="3" />
+      <LineId Id="130" Count="1" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="103" Count="1" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="72" Count="1" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="79" Count="4" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="78" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

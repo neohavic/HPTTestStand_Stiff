@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.10">
+  <POU Name="FB_ClearFault" Id="{0b09017d-7b54-417d-aac1-78bc188a5c4d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ClearFault
+VAR_INPUT
+	bExecute : BOOL := FALSE;
+	slv_addr : UINT := 0;
+END_VAR
+VAR_OUTPUT
+	state : INT := 0;
+	
+	bError : BOOL;
+	
+END_VAR
+VAR
+	fbSdoWrite : FB_EcCoESdoWrite;
+	nErrID : UDINT :=0;
+	sdo_address: UINT := 16#8006;
+	subIndex: BYTE := 1;
+	value : INT := 1;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbSdoWrite(
+        sNetId          := MAIN.sNetId_local,
+        //nSlaveAddr      := nSlaveAddr,
+		nSlaveAddr :=   slv_addr,
+        nIndex          := sdo_address,
+        nSubIndex       := subIndex,
+        pSrcBuf         := ADR(value),
+        cbBufLen        := SIZEOF(value),
+        bExecute        := bExecute
+);
+state := 1;
+IF NOT fbSdoWrite.bBusy THEN
+        bExecute := FALSE;
+		//done	:= TRUE;
+        IF NOT fbSdoWrite.bError THEN 
+                (* write successful *)
+                bError := FALSE;
+                nErrId := 0;
+        ELSE 
+                (* write failed *)
+                bError := fbSdoWrite.bError;
+                nErrId := fbSdoWrite.nErrId;
+        END_IF
+        fbSdoWrite(bExecute := FALSE);
+		state := 0;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ClearFault">
+      <LineId Id="25" Count="24" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

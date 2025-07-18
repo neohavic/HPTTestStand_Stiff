@@ -1,0 +1,57 @@
+[
+  {
+    "serverExtensions": [
+      {
+        "publishServerExtension": true,
+        "name": "ADS"
+      },
+      {
+        "publishServerExtension": true,
+        "name": "TcHmiLua"
+      },
+      {
+        "publishServerExtension": true,
+        "name": "TcHmiSqliteLogger"
+      },
+      {
+        "publishServerExtension": true,
+        "name": "TcHmiSrv"
+      },
+      {
+        "publishServerExtension": true,
+        "name": "TcHmiUserManagement"
+      }
+    ],
+    "isNew": false,
+    "profileName": "HTTPS_Stiffness",
+    "publishMode": "TcHmi",
+    "targetDirectory": "",
+    "server": "",
+    "sitePath": "",
+    "destinationUrl": "",
+    "passiveMode": true,
+    "savePassword": true,
+    "deleteAllFilesBeforePublish": true,
+    "deleteExtensionDataBeforePublish": true,
+    "alwaysPublishLocalServerConfiguration": true,
+    "temporaryPublishWithoutServerConfiguration": false,
+    "abortOnErrors": false,
+    "createPublishLog": true,
+    "userName": "",
+    "encryptedPassword": "",
+    "encryptedTcHmiServerPassword": "kbTRatLlv8ltFwDz6qqbog==",
+    "tcHmiServerHost": "localhost",
+    "tcHmiServerPort": "1060",
+    "socketTimeout": "60",
+    "clientCertificateCN": "",
+    "tcHmiUseTLS": false,
+    "useClientCertificate": false,
+    "launchBrowserAfterPublish": true,
+    "createVirtualDirectoriesOnTargetSystem": true,
+    "tcHmiServerUserName": "__SystemAdministrator",
+    "tcHmiDestinationUrl": "http://localhost:1060/",
+    "publishConfiguration": "remote",
+    "tcHmiSavePassword": false,
+    "tcHmiIgnoreCertificateErrors": true
+  }
+]

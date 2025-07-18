@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="GVL_TS" Id="{5dcc3d7e-5292-451f-9513-69a4a9cec5c9}">
+    <Declaration><![CDATA[VAR_GLOBAL CONSTANT
+	max_rows : UDINT := 10001;
+END_VAR
+
+{attribute 'qualified_only'}
+VAR_GLOBAL
+
+// Variables for EL4102 0-10V Module for Air Control
+AirOut1 AT %Q*			: INT;
+AirOut2 AT %Q*			: INT;
+
+// Variables for EL5101 RS422 Incremental Encoder Interface
+RSCount AT %I* 			: DINT;
+CountReset AT %Q* 		: DINT; // Count reset variable, set to zero for tareing of laser interferometer 
+CountResetEn AT %Q* 	: BOOL; // Enable flag for counter reset
+LaserUnder AT %I* 		: BOOL; // Underflow flag for debugging
+LaserOver AT %I* 		: BOOL; // Overflow flag for debugging
+
+// Variables for HPT eBox EL5042 BiSS-C Encoder Interface
+ActEncCount AT %I* 		: ULINT;
+MirEncCount AT %I* 		: ULINT;
+
+// Motor variables
+mtr_tor AT %I* 			: INT;
+StopAbort AT %Q* 		: INT;
+TransitionFromQS AT %Q* : INT;
+mtrCurrent AT %I* 		: INT;
+control_word AT %Q* 	: UINT;
+status_word AT %I* 		: UINT;
+target_vel AT %Q* 		: DINT :=0; (*0.1cnts/s*)
+mtrl_vel AT %I* 		: DINT; (*0.1cnts/sec*)
+mtr_pos AT %I* 			: DINT; (*counts*)
+velLoopErr AT %I*		: DINT;
+cmdVel AT %I*			: DINT;
+ClearLatched2181 AT %Q* : UDINT;
+ClearLatched2183 AT %Q* : UDINT;
+Sticky AT %I* 			: UDINT;
+EncoderFault AT %I* 	: UDINT;
+DIO_status AT %I* 		: UDINT;	(*limit switch status*)
+bLim_pos 				: BOOL := FALSE;
+bLim_neg 				: BOOL := FALSE;
+bEnableState 			: BOOL;
+bReset 					: BOOL;
+bEnable 				: BOOL;
+sJog 					: STRING;
+
+// Load cell input variable
+LC_InR AT %I* 			: REAL;
+LC_Tara AT %Q*			: BYTE;
+
+// Thermocouple Variables
+EncTapeTemp AT %I* 		: INT;
+MotorTemp AT %I* 		: INT;
+
+// Limit switch triggered status variables
+bPos 					: BOOL;
+bNeg 					: BOOL;
+Pdiff 					: LREAL;
+
+// EL3002 Interferometer Laser Strength Indicator Variable
+LazrStrength AT %I* 	: INT;
+
+// EL3052 4...20mA analog input variables for pressure/flow sensors
+PressureIn AT %I* 		: INT;
+FlowIn AT %I* 			: INT;
+
+// Buffer variable for RS-232 COM port
+RxBufferEL				: ComBuffer;	(* Receive data buffer; used with all receive function blocks *)
+TxBufferEL				: ComBuffer;	(* Transmit data buffer; used with all receive function blocks *)
+
+(* DEBUG VARIABLES *)
+//bTEST1 				: BOOL := FALSE;
+//bTEST2 				: BOOL := FALSE;
+//wTest 				: WORD;
+//sTest 				: STRING;
+
+END_VAR
+]]></Declaration>
+  </GVL>
+</TcPlcObject>
